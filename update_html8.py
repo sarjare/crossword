@@ -1,4 +1,68 @@
-<!DOCTYPE html>
+import json
+import shutil
+
+python_hints = {
+    "BACKUPS": """word = "Bpauskc"\nresult = ""\nfor i in range(len(word)):\n    if i % 2 == 0:\n        result += word[i]\nfor i in range(len(word)):\n    if i % 2 != 0:\n        result += word[i]\nprint(result)""",
+    "ANTIVIRUS": """word = "avitnorus"\nresult = ""\nfor i in range(len(word)-1, -1, -2):\n    result += word[i]\nfor i in range(len(word)-2, -1, -2):\n    result += word[i]\nprint(result)""",
+    "THREATACTOR": """word = "Trhaet Aotcr"\nresult = ""\nfor i in range(0, len(word), 2):\n    result += word[i]\nfor i in range(1, len(word), 2):\n    result += word[i]\nprint(result)""",
+    "DARKWEB": """word = "DWaerk b"\nresult = ""\nfor i in range(len(word)):\n    if i < len(word)//2:\n        result += word[i]\nfor i in range(len(word)-1, len(word)//2 - 1, -1):\n    result += word[i]\nprint(result)""",
+    "SPAM": """word = "Smap"\nresult = ""\nfor i in range(0, len(word), 2):\n    result += word[i]\nfor i in range(1, len(word), 2):\n    result += word[i]\nprint(result)""",
+    "DATABREACH": """word = "Daat Brehca"\nresult = ""\nfor i in range(len(word)):\n    if i % 3 != 0:\n        result += word[i]\nfor i in range(len(word)):\n    if i % 3 == 0:\n        result += word[i]\nprint(result)""",
+    "SPYWARE": """word = "Sypawre"\nresult = ""\nfor i in range(len(word)-1, -1, -2):\n    result += word[i]\nfor i in range(len(word)-2, -1, -2):\n    result += word[i]\nprint(result)""",
+    "ENCRYPTION": """word = "Enrcyptoin"\nresult = ""\nfor i in range(len(word)):\n    if i % 2 == 0:\n        result += word[i]\nfor i in range(len(word)):\n    if i % 2 != 0:\n        result += word[i]\nprint(result)""",
+    "VPN": """word = "VPN"\nresult = ""\nfor i in range(len(word)):\n    result += chr(ord(word[i]) + i)\nprint(result)""",
+    "BOTNET": """word = "Btonet"\nresult = ""\nfor i in range(1, len(word), 2):\n    result += word[i]\nfor i in range(0, len(word), 2):\n    result += word[i]\nprint(result)""",
+    "CYBERSECURITY": """word = "Cybresuciryt"\nresult = ""\nfor i in range(0, len(word), 2):\n    result += word[i]\nfor i in range(1, len(word), 2):\n    result += word[i]\nprint(result)""",
+    "SPOOFING": """word = "Sopofnig"\nresult = ""\nfor i in range(len(word)):\n    if i % 2 == 0:\n        result += word[i]\nfor i in range(len(word)):\n    if i % 2 != 0:\n        result += word[i]\nprint(result)""",
+    "INSIDERTHREAT": """word = "Insdier Thraet"\nresult = ""\nfor i in range(len(word)):\n    if word[i] != " ":\n        result += word[i]\nprint(result[:7] + " " + result[7:])""",
+    "AUTHENTICATION": """word = "Auhteitacntion"\nresult = ""\nfor i in range(0, len(word), 2):\n    result += word[i]\nfor i in range(1, len(word), 2):\n    result += word[i]\nprint(result)""",
+    "PASSWORD": """word = "Psaowrsd"\nresult = ""\nfor i in range(len(word)):\n    if i % 2 == 0:\n        result += word[i]\nfor i in range(len(word)):\n    if i % 2 != 0:\n        result += word[i]\nprint(result)""",
+    "VULNERABILITY": """word = "Vunelarbility"\nresult = ""\nfor i in range(0, len(word), 2):\n    result += word[i]\nfor i in range(1, len(word), 2):\n    result += word[i]\nprint(result)""",
+    "RANSOMWARE": """word = "Rnasomawre"\nresult = ""\nfor i in range(len(word)-1, -1, -1):\n    result += word[i]\nprint(result)""",
+    "MALWARE": """word = "Malwrae"\nresult = ""\nfor i in range(1, len(word), 2):\n    result += word[i]\nfor i in range(0, len(word), 2):\n    result += word[i]\nprint(result)""",
+    "FIREWALL": """word = "Fireawll"\nresult = ""\nfor i in range(len(word)):\n    if i != 4:\n        result += word[i]\nprint(result)""",
+    "VIRUS": """word = "Vrius"\nresult = ""\nfor i in range(len(word)):\n    if i % 2 == 0:\n        result += word[i]\nfor i in range(len(word)):\n    if i % 2 != 0:\n        result += word[i]\nprint(result)""",
+    "PASSKEY": """word = "Psaesky"\nresult = ""\nfor i in range(len(word)):\n    if i % 2 == 0:\n        result += word[i]\nfor i in range(len(word)):\n    if i % 2 != 0:\n        result += word[i]\nprint(result)""",
+    "HACKER": """word = "Hakc er"\nresult = ""\nfor ch in word:\n    if ch != " ":\n        result += ch\nprint(result)""",
+    "PHISHING": """word = "Pihsihng"\nresult = ""\nfor i in range(len(word)):\n    if i % 2 == 0:\n        result += word[i]\nfor i in range(len(word)):\n    if i % 2 != 0:\n        result += word[i]\nprint(result)""",
+    "PRIVACY": """word = "Prvica y"\nresult = ""\nfor ch in word:\n    if ch != " ":\n        result += ch\nprint(result)"""
+}
+
+with open("c:/Users/sarjare/.gemini/antigravity/scratch/crosssword/best_layout.json", "r") as f:
+    best = json.load(f)
+
+start_cells = {}
+for q in best['q']:
+    k = (q['x'], q['y'])
+    if k not in start_cells:
+        start_cells[k] = []
+    start_cells[k].append(q)
+
+sorted_cells = sorted(start_cells.keys(), key=lambda p: (p[1], p[0]))
+cell_numbering = {cell: i+1 for i, cell in enumerate(sorted_cells)}
+
+js_questions = []
+for q in best['q']:
+    cell = (q['x'], q['y'])
+    num = cell_numbering[cell]
+    unique_id = f"'{num}{q['dir'][0].upper()}'"
+    hint_code = python_hints.get(q['ans'].replace(' ', ''), "")
+    escaped_hint_code = hint_code.replace("`", "\`").replace("$", "\\$")
+    js_questions.append(f"""{{
+    id: {unique_id},
+    display_id: {num},
+    dir: '{q['dir']}',
+    x: {q['x']},
+    y: {q['y']},
+    len: {q['len']},
+    ans: "{q['ans']}",
+    hint: "{q['hint']}",
+    pythonHint: `{escaped_hint_code}`
+}}""")
+
+questions_js = "const QUESTIONS = [\n  " + ",\n  ".join(js_questions) + "\n];"
+
+html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,7 +72,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body {
+        body {{
             background-color: #020617; 
             color: #00ff41;
             font-family: 'Fira Code', monospace;
@@ -17,55 +81,55 @@
             margin: 0;
             display: flex;
             flex-direction: column;
-        }
-        .orbitron { font-family: 'Orbitron', sans-serif; }
+        }}
+        .orbitron {{ font-family: 'Orbitron', sans-serif; }}
         
-        .cyber-grid { 
+        .cyber-grid {{ 
             background-image: 
                 radial-gradient(rgba(6, 182, 212, 0.15) 1px, transparent 0),
                 radial-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 0); 
             background-size: 24px 24px, 12px 12px;
             background-position: 0 0, 6px 6px;
             opacity: 0.8; 
-        }
-        .scanline { 
+        }}
+        .scanline {{ 
             width: 100%; height: 3px; 
             background: linear-gradient(to right, transparent, rgba(6, 182, 212, 0.5), rgba(0, 255, 65, 0.5), transparent);
             position: fixed; top: 0; z-index: 100; pointer-events: none; 
             animation: scan 2s linear infinite; 
             box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
             display: none; 
-        }
-        @keyframes scan { 0% { top: -10px; } 100% { top: 100%; } }
+        }}
+        @keyframes scan {{ 0% {{ top: -10px; }} 100% {{ top: 100%; }} }}
 
-        .cyber-card {
+        .cyber-card {{
             background: rgba(10, 15, 30, 0.8);
             border: 1px solid #06b6d4;
             box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
             backdrop-filter: blur(8px);
-        }
-        .terminal-input {
+        }}
+        .terminal-input {{
             background: transparent;
             border: none;
             border-bottom: 2px solid #06b6d4;
             outline: none;
             color: #06b6d4;
-        }
-        .terminal-input:focus {
+        }}
+        .terminal-input:focus {{
             border-bottom: 2px solid #00ff41;
             color: #00ff41;
-        }
-        .glitch { animation: glitch 1s linear infinite; }
-        @keyframes glitch {
-            2%, 64% { transform: translate(2px, 0) skew(0deg); text-shadow: 2px 0 0 #06b6d4, -1px 0 0 #00ff41; }
-            4%, 60% { transform: translate(-2px, 0) skew(0deg); text-shadow: -2px 0 0 #06b6d4, 1px 0 0 #00ff41; }
-            62% { transform: translate(0, 0) skew(5deg); }
-        }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-thumb { background: #06b6d4; }
-        .hidden-view { display: none !important; }
+        }}
+        .glitch {{ animation: glitch 1s linear infinite; }}
+        @keyframes glitch {{
+            2%, 64% {{ transform: translate(2px, 0) skew(0deg); text-shadow: 2px 0 0 #06b6d4, -1px 0 0 #00ff41; }}
+            4%, 60% {{ transform: translate(-2px, 0) skew(0deg); text-shadow: -2px 0 0 #06b6d4, 1px 0 0 #00ff41; }}
+            62% {{ transform: translate(0, 0) skew(5deg); }}
+        }}
+        ::-webkit-scrollbar {{ width: 5px; height: 5px; }}
+        ::-webkit-scrollbar-thumb {{ background: #06b6d4; }}
+        .hidden-view {{ display: none !important; }}
         
-        .grid-container {
+        .grid-container {{
             display: grid;
             grid-template-columns: repeat(23, minmax(0, 1fr));
             grid-template-rows: repeat(25, minmax(0, 1fr));
@@ -78,8 +142,8 @@
             max-width: 100%;
             max-height: 100%;
             margin: 0 auto;
-        }
-        .grid-cell {
+        }}
+        .grid-cell {{
             width: min(3vw, 24px);
             height: min(3vw, 24px);
             background: #020617;
@@ -91,62 +155,62 @@
             font-weight: bold;
             color: white;
             transition: all 0.2s;
-        }
+        }}
         
-        @media (max-width: 1024px) {
-            .grid-container { max-height: 60vh; max-width: 100%; }
-            .grid-cell { width: min(4vw, 20px); height: min(4vw, 20px); font-size: 10px; }
-        }
+        @media (max-width: 1024px) {{
+            .grid-container {{ max-height: 60vh; max-width: 100%; }}
+            .grid-cell {{ width: min(4vw, 20px); height: min(4vw, 20px); font-size: 10px; }}
+        }}
         
-        .grid-cell.active {
+        .grid-cell.active {{
             background: rgba(6, 182, 212, 0.15) !important;
             cursor: pointer;
-        }
-        .grid-cell.active:hover {
+        }}
+        .grid-cell.active:hover {{
             background: rgba(6, 182, 212, 0.3) !important;
             transform: scale(1.1);
             z-index: 10;
-        }
-        .grid-cell.solved {
+        }}
+        .grid-cell.solved {{
             background: rgba(0, 255, 65, 0.25) !important;
             color: #00ff41;
             text-shadow: 0 0 5px #00ff41;
-        }
-        .grid-cell.selected {
+        }}
+        .grid-cell.selected {{
             border: 2px solid #00ff41;
             background: rgba(6, 182, 212, 0.5) !important;
             color: #00ff41;
             transform: scale(1.1);
             z-index: 10;
             box-shadow: 0 0 10px rgba(0,255,65,0.4);
-        }
+        }}
 
-        .clue-list-item {
+        .clue-list-item {{
             cursor: pointer;
             transition: all 0.2s;
             border-left: 2px solid transparent;
-        }
-        .clue-list-item:hover {
+        }}
+        .clue-list-item:hover {{
             background: rgba(6, 182, 212, 0.1);
             border-left: 2px solid #06b6d4;
-        }
-        .clue-list-item.selected {
+        }}
+        .clue-list-item.selected {{
             background: rgba(6, 182, 212, 0.2);
             border-left: 2px solid #00ff41;
             color: #00ff41;
-        }
-        .clue-list-item.solved {
+        }}
+        .clue-list-item.solved {{
             opacity: 0.5;
             text-decoration: line-through;
             color: #00ff41;
-        }
+        }}
         
-        .main-workspace {
+        .main-workspace {{
             height: calc(100vh - 100px); 
-        }
+        }}
         
-        .cursor-move { cursor: grab; }
-        .cursor-move:active { cursor: grabbing; }
+        .cursor-move {{ cursor: grab; }}
+        .cursor-move:active {{ cursor: grabbing; }}
     </style>
 </head>
 <body class="p-4 md:p-6 relative text-white">
@@ -354,566 +418,148 @@
     </div>
 
     <script>
-        const QUESTIONS = [
-  {
-    id: '14A',
-    display_id: 14,
-    dir: 'across',
-    x: 6,
-    y: 12,
-    len: 14,
-    ans: "AUTHENTICATION",
-    hint: "A process used to verify a user's identity, important in Zero Trust models used by Dell.",
-    pythonHint: `word = "Auhteitacntion"
-result = ""
-for i in range(0, len(word), 2):
-    result += word[i]
-for i in range(1, len(word), 2):
-    result += word[i]
-print(result)`
-},
-  {
-    id: '11D',
-    display_id: 11,
-    dir: 'down',
-    x: 10,
-    y: 8,
-    len: 13,
-    ans: "VULNERABILITY",
-    hint: "A flaw or weakness in a system that could be exploited.",
-    pythonHint: `word = "Vunelarbility"
-result = ""
-for i in range(0, len(word), 2):
-    result += word[i]
-for i in range(1, len(word), 2):
-    result += word[i]
-print(result)`
-},
-  {
-    id: '16D',
-    display_id: 16,
-    dir: 'down',
-    x: 13,
-    y: 12,
-    len: 13,
-    ans: "INSIDERTHREAT",
-    hint: "A cybersecurity risk that originates from within an organization.",
-    pythonHint: `word = "Insdier Thraet"
-result = ""
-for i in range(len(word)):
-    if word[i] != " ":
-        result += word[i]
-print(result[:7] + " " + result[7:])`
-},
-  {
-    id: '2D',
-    display_id: 2,
-    dir: 'down',
-    x: 16,
-    y: 1,
-    len: 13,
-    ans: "CYBERSECURITY",
-    hint: "The protection of digital information and systems, a key focus area for Dell Technologies.",
-    pythonHint: `word = "Cybresuciryt"
-result = ""
-for i in range(0, len(word), 2):
-    result += word[i]
-for i in range(1, len(word), 2):
-    result += word[i]
-print(result)`
-},
-  {
-    id: '15D',
-    display_id: 15,
-    dir: 'down',
-    x: 8,
-    y: 12,
-    len: 11,
-    ans: "THREATACTOR",
-    hint: "An individual, group, or organization that conducts or intends to conduct harmful cyber activities.",
-    pythonHint: `word = "Trhaet Aotcr"
-result = ""
-for i in range(0, len(word), 2):
-    result += word[i]
-for i in range(1, len(word), 2):
-    result += word[i]
-print(result)`
-},
-  {
-    id: '5D',
-    display_id: 5,
-    dir: 'down',
-    x: 19,
-    y: 3,
-    len: 10,
-    ans: "ENCRYPTION",
-    hint: "Converting data into a form that cannot be easily understood by unauthorized users, widely used in Dell's security solutions.",
-    pythonHint: `word = "Enrcyptoin"
-result = ""
-for i in range(len(word)):
-    if i % 2 == 0:
-        result += word[i]
-for i in range(len(word)):
-    if i % 2 != 0:
-        result += word[i]
-print(result)`
-},
-  {
-    id: '22A',
-    display_id: 22,
-    dir: 'across',
-    x: 13,
-    y: 18,
-    len: 10,
-    ans: "RANSOMWARE",
-    hint: "Malware that denies access to data until a ransom is paid, which Dell's recovery solutions help handle.",
-    pythonHint: `word = "Rnasomawre"
-result = ""
-for i in range(len(word)-1, -1, -1):
-    result += word[i]
-print(result)`
-},
-  {
-    id: '13D',
-    display_id: 13,
-    dir: 'down',
-    x: 6,
-    y: 11,
-    len: 10,
-    ans: "DATABREACH",
-    hint: "The unauthorized movement or disclosure of sensitive information, something companies like Dell Technologies work to prevent.",
-    pythonHint: `word = "Daat Brehca"
-result = ""
-for i in range(len(word)):
-    if i % 3 != 0:
-        result += word[i]
-for i in range(len(word)):
-    if i % 3 == 0:
-        result += word[i]
-print(result)`
-},
-  {
-    id: '10A',
-    display_id: 10,
-    dir: 'across',
-    x: 6,
-    y: 8,
-    len: 9,
-    ans: "ANTIVIRUS",
-    hint: "Computer programs that can block, detect, and remove viruses and other malware.",
-    pythonHint: `word = "avitnorus"
-result = ""
-for i in range(len(word)-1, -1, -2):
-    result += word[i]
-for i in range(len(word)-2, -1, -2):
-    result += word[i]
-print(result)`
-},
-  {
-    id: '21D',
-    display_id: 21,
-    dir: 'down',
-    x: 21,
-    y: 16,
-    len: 8,
-    ans: "FIREWALL",
-    hint: "Software designed to block unauthorized access to a network.",
-    pythonHint: `word = "Fireawll"
-result = ""
-for i in range(len(word)):
-    if i != 4:
-        result += word[i]
-print(result)`
-},
-  {
-    id: '20D',
-    display_id: 20,
-    dir: 'down',
-    x: 17,
-    y: 16,
-    len: 8,
-    ans: "SPOOFING",
-    hint: "Faking the sending address of a transmission to gain illegal access.",
-    pythonHint: `word = "Sopofnig"
-result = ""
-for i in range(len(word)):
-    if i % 2 == 0:
-        result += word[i]
-for i in range(len(word)):
-    if i % 2 != 0:
-        result += word[i]
-print(result)`
-},
-  {
-    id: '18D',
-    display_id: 18,
-    dir: 'down',
-    x: 19,
-    y: 14,
-    len: 8,
-    ans: "PASSWORD",
-    hint: "A string of characters used to authenticate an identity.",
-    pythonHint: `word = "Psaowrsd"
-result = ""
-for i in range(len(word)):
-    if i % 2 == 0:
-        result += word[i]
-for i in range(len(word)):
-    if i % 2 != 0:
-        result += word[i]
-print(result)`
-},
-  {
-    id: '3D',
-    display_id: 3,
-    dir: 'down',
-    x: 7,
-    y: 2,
-    len: 8,
-    ans: "PHISHING",
-    hint: "A method of tricking users into revealing sensitive information through fake messages or websites.",
-    pythonHint: `word = "Pihsihng"
-result = ""
-for i in range(len(word)):
-    if i % 2 == 0:
-        result += word[i]
-for i in range(len(word)):
-    if i % 2 != 0:
-        result += word[i]
-print(result)`
-},
-  {
-    id: '9A',
-    display_id: 9,
-    dir: 'across',
-    x: 4,
-    y: 5,
-    len: 7,
-    ans: "PASSKEY",
-    hint: "A modern, more secure alternative to passwords for user authentication.",
-    pythonHint: `word = "Psaesky"
-result = ""
-for i in range(len(word)):
-    if i % 2 == 0:
-        result += word[i]
-for i in range(len(word)):
-    if i % 2 != 0:
-        result += word[i]
-print(result)`
-},
-  {
-    id: '23A',
-    display_id: 23,
-    dir: 'across',
-    x: 9,
-    y: 23,
-    len: 7,
-    ans: "PRIVACY",
-    hint: "The ability of individuals to control how their personal information is used.",
-    pythonHint: `word = "Prvica y"
-result = ""
-for ch in word:
-    if ch != " ":
-        result += ch
-print(result)`
-},
-  {
-    id: '4D',
-    display_id: 4,
-    dir: 'down',
-    x: 14,
-    y: 2,
-    len: 7,
-    ans: "BACKUPS",
-    hint: "Extra copies of computer files that can be used to restore lost or damaged data.",
-    pythonHint: `word = "Bpauskc"
-result = ""
-for i in range(len(word)):
-    if i % 2 == 0:
-        result += word[i]
-for i in range(len(word)):
-    if i % 2 != 0:
-        result += word[i]
-print(result)`
-},
-  {
-    id: '12A',
-    display_id: 12,
-    dir: 'across',
-    x: 8,
-    y: 10,
-    len: 7,
-    ans: "MALWARE",
-    hint: "Software that disrupts or damages systems by performing unauthorized actions.",
-    pythonHint: `word = "Malwrae"
-result = ""
-for i in range(1, len(word), 2):
-    result += word[i]
-for i in range(0, len(word), 2):
-    result += word[i]
-print(result)`
-},
-  {
-    id: '1D',
-    display_id: 1,
-    dir: 'down',
-    x: 9,
-    y: 0,
-    len: 7,
-    ans: "DARKWEB",
-    hint: "Part of the internet that isn't indexed by search engines.",
-    pythonHint: `word = "DWaerk b"
-result = ""
-for i in range(len(word)):
-    if i < len(word)//2:
-        result += word[i]
-for i in range(len(word)-1, len(word)//2 - 1, -1):
-    result += word[i]
-print(result)`
-},
-  {
-    id: '7D',
-    display_id: 7,
-    dir: 'down',
-    x: 4,
-    y: 4,
-    len: 7,
-    ans: "SPYWARE",
-    hint: "Software that is secretly installed into an information system without user knowledge.",
-    pythonHint: `word = "Sypawre"
-result = ""
-for i in range(len(word)-1, -1, -2):
-    result += word[i]
-for i in range(len(word)-2, -1, -2):
-    result += word[i]
-print(result)`
-},
-  {
-    id: '19D',
-    display_id: 19,
-    dir: 'down',
-    x: 15,
-    y: 15,
-    len: 6,
-    ans: "BOTNET",
-    hint: "A collection of computers compromised and controlled across a network.",
-    pythonHint: `word = "Btonet"
-result = ""
-for i in range(1, len(word), 2):
-    result += word[i]
-for i in range(0, len(word), 2):
-    result += word[i]
-print(result)`
-},
-  {
-    id: '8A',
-    display_id: 8,
-    dir: 'across',
-    x: 12,
-    y: 4,
-    len: 6,
-    ans: "HACKER",
-    hint: "An unauthorized user attempting to gain access to a system.",
-    pythonHint: `word = "Hakc er"
-result = ""
-for ch in word:
-    if ch != " ":
-        result += ch
-print(result)`
-},
-  {
-    id: '6A',
-    display_id: 6,
-    dir: 'across',
-    x: 0,
-    y: 4,
-    len: 5,
-    ans: "VIRUS",
-    hint: "A program that can replicate itself and spread harm.",
-    pythonHint: `word = "Vrius"
-result = ""
-for i in range(len(word)):
-    if i % 2 == 0:
-        result += word[i]
-for i in range(len(word)):
-    if i % 2 != 0:
-        result += word[i]
-print(result)`
-},
-  {
-    id: '17A',
-    display_id: 17,
-    dir: 'across',
-    x: 18,
-    y: 14,
-    len: 4,
-    ans: "SPAM",
-    hint: "Unsolicited emails sent to many addresses.",
-    pythonHint: `word = "Smap"
-result = ""
-for i in range(0, len(word), 2):
-    result += word[i]
-for i in range(1, len(word), 2):
-    result += word[i]
-print(result)`
-},
-  {
-    id: '6D',
-    display_id: 6,
-    dir: 'down',
-    x: 0,
-    y: 4,
-    len: 3,
-    ans: "VPN",
-    hint: "A mechanism for creating a secure connection between a device and a network.",
-    pythonHint: `word = "VPN"
-result = ""
-for i in range(len(word)):
-    result += chr(ord(word[i]) + i)
-print(result)`
-}
-];
+        {questions_js}
 
         const ADMIN_PASS = "admin123";
         const GRID_W = 23;
         const GRID_H = 25;
         
-        let db = JSON.parse(localStorage.getItem('cyber_crossword_db') || '{ "teams": [] }');
+        let db = JSON.parse(localStorage.getItem('cyber_crossword_db') || '{{ "teams": [] }}');
         
-        let state = {
+        let state = {{
             teamId: null, 
             activeQ: null,
             timerInterval: null
-        };
+        }};
 
         const saveDB = () => localStorage.setItem('cyber_crossword_db', JSON.stringify(db));
 
-        window.onload = () => {
+        window.onload = () => {{
             lucide.createIcons();
             populateCluesList();
             setupDraggable();
             
             const sessionData = sessionStorage.getItem('cyber_active_session');
-            if(sessionData) {
+            if(sessionData) {{
                 state.teamId = parseInt(sessionData);
-                if(db.teams[state.teamId] && !db.teams[state.teamId].submitted) {
+                if(db.teams[state.teamId] && !db.teams[state.teamId].submitted) {{
                     resumeGame();
-                } else {
+                }} else {{
                     state.teamId = null;
                     sessionStorage.removeItem('cyber_active_session');
-                }
-            }
-        };
+                }}
+            }}
+        }};
         
         // --- DRAG LOGIC ---
-        const setupDraggable = () => {
+        const setupDraggable = () => {{
             const promptEl = document.getElementById('decrypt-prompt');
             const headerEl = document.getElementById('decrypt-prompt-header');
             let startX, startY, startLeft, startTop;
 
-            headerEl.addEventListener('mousedown', (e) => {
+            headerEl.addEventListener('mousedown', (e) => {{
                 startX = e.clientX;
                 startY = e.clientY;
                 
                 const rect = promptEl.getBoundingClientRect();
                 promptEl.style.transform = 'none';
-                promptEl.style.left = `${rect.left}px`;
-                promptEl.style.top = `${rect.top}px`;
+                promptEl.style.left = `${{rect.left}}px`;
+                promptEl.style.top = `${{rect.top}}px`;
                 
                 startLeft = parseInt(promptEl.style.left, 10);
                 startTop = parseInt(promptEl.style.top, 10);
 
                 document.addEventListener('mousemove', onDrag);
                 document.addEventListener('mouseup', stopDrag);
-            });
+            }});
 
-            function onDrag(e) {
+            function onDrag(e) {{
                 const dx = e.clientX - startX;
                 const dy = e.clientY - startY;
-                promptEl.style.left = `${startLeft + dx}px`;
-                promptEl.style.top = `${startTop + dy}px`;
-            }
-            function stopDrag() {
+                promptEl.style.left = `${{startLeft + dx}}px`;
+                promptEl.style.top = `${{startTop + dy}}px`;
+            }}
+            function stopDrag() {{
                 document.removeEventListener('mousemove', onDrag);
                 document.removeEventListener('mouseup', stopDrag);
-            }
-        };
+            }}
+        }};
         
-        window.closePrompt = () => {
+        window.closePrompt = () => {{
             document.getElementById('decrypt-prompt').classList.add('hidden');
             state.activeQ = null;
             renderGrid();
             updateCluesUI();
-        };
+        }};
         
         window.openInstructions = () => document.getElementById('instructions-modal').classList.remove('hidden');
         window.closeInstructions = () => document.getElementById('instructions-modal').classList.add('hidden');
 
         // ... (remaining standard scripts)
-        const populateCluesList = () => {
+        const populateCluesList = () => {{
             const across = QUESTIONS.filter(q => q.dir === 'across').sort((a,b) => a.display_id - b.display_id);
             const down = QUESTIONS.filter(q => q.dir === 'down').sort((a,b) => a.display_id - b.display_id);
             
-            const renderList = (arr, containerId) => {
+            const renderList = (arr, containerId) => {{
                 document.getElementById(containerId).innerHTML = arr.map(q => `
-                    <div id="clue-${q.id}" class="clue-list-item p-1.5 rounded mb-1 flex items-start gap-1.5 leading-snug" onclick="selectQuestion('${q.id}')">
-                        <span class="font-bold text-cyan-500">${q.display_id}.</span>
-                        <span>${q.hint}</span>
+                    <div id="clue-${{q.id}}" class="clue-list-item p-1.5 rounded mb-1 flex items-start gap-1.5 leading-snug" onclick="selectQuestion('${{q.id}}')">
+                        <span class="font-bold text-cyan-500">${{q.display_id}}.</span>
+                        <span>${{q.hint}}</span>
                     </div>
                 `).join('');
-            };
+            }};
             
             renderList(across, 'clues-across');
             renderList(down, 'clues-down');
-        };
+        }};
 
-        window.goAdminLogin = () => {
+        window.goAdminLogin = () => {{
             document.getElementById('admin-error').classList.add('hidden');
             document.getElementById('admin-pass-input').value = '';
             showView('view-admin-login');
-        };
+        }};
 
-        window.closeAdminLogin = () => {
+        window.closeAdminLogin = () => {{
             if(state.teamId !== null) showView('view-game');
             else showView('view-auth');
-        };
+        }};
 
-        window.submitAdminLogin = () => {
+        window.submitAdminLogin = () => {{
             const val = document.getElementById('admin-pass-input').value;
-            if(val === ADMIN_PASS) {
+            if(val === ADMIN_PASS) {{
                 if(document.fullscreenElement) document.exitFullscreen();
                 renderAdminTable();
                 showView('view-admin');
-            } else {
+            }} else {{
                 document.getElementById('admin-error').classList.remove('hidden');
-            }
-        };
+            }}
+        }};
 
-        window.closeAdmin = () => {
+        window.closeAdmin = () => {{
             if(state.teamId !== null) showView('view-game');
             else showView('view-auth');
-        };
+        }};
 
-        window.openLeaderboard = () => {
+        window.openLeaderboard = () => {{
             refreshScoreboard();
             showView('view-leaderboard');
-        };
+        }};
 
-        window.closeLeaderboard = () => {
+        window.closeLeaderboard = () => {{
             showView('view-game');
-        };
+        }};
 
-        window.startGame = () => {
+        window.startGame = () => {{
             const t = document.getElementById('reg-team').value.trim();
             const p1 = document.getElementById('reg-p1').value.trim();
             const p2 = document.getElementById('reg-p2').value.trim();
             
-            if(!t || !p1 || !p2) {
+            if(!t || !p1 || !p2) {{
                 document.getElementById('reg-error').classList.remove('hidden');
                 return;
-            }
+            }}
 
-            const newTeam = {
+            const newTeam = {{
                 id: Date.now(),
                 name: t,
                 agent1: p1,
@@ -923,19 +569,19 @@ print(result)`
                 flags: 0,
                 solved: [],
                 hintsUsed: [],
-                attempts: {},
+                attempts: {{}},
                 submitted: false
-            };
+            }};
 
             db.teams.push(newTeam);
             state.teamId = db.teams.length - 1;
             saveDB();
             sessionStorage.setItem('cyber_active_session', state.teamId);
 
-            enterFullscreen().then(() => { resumeGame(); }).catch(err => { resumeGame(); });
-        };
+            enterFullscreen().then(() => {{ resumeGame(); }}).catch(err => {{ resumeGame(); }});
+        }};
 
-        window.resumeGame = () => {
+        window.resumeGame = () => {{
             const team = db.teams[state.teamId];
             document.getElementById('stat-team').innerText = team.name.toUpperCase();
             document.getElementById('stat-score').innerText = team.score;
@@ -946,19 +592,19 @@ print(result)`
             showView('view-game');
             updateCluesUI();
             
-            setTimeout(() => {
+            setTimeout(() => {{
                 const gameView = document.getElementById('view-game');
                 gameView.style.filter = 'blur(0px)';
                 gameView.style.opacity = '1';
                 gameView.classList.remove('pointer-events-none');
-            }, 500);
+            }}, 500);
 
             renderGrid();
             startTimer();
-        };
+        }};
 
-        window.surrenderGame = () => {
-            if(confirm("Are you sure you want to surrender? Your current score and time will be recorded as final.")) {
+        window.surrenderGame = () => {{
+            if(confirm("Are you sure you want to surrender? Your current score and time will be recorded as final.")) {{
                 const team = db.teams[state.teamId];
                 team.submitted = true;
                 saveDB();
@@ -967,87 +613,87 @@ print(result)`
                 state.teamId = null;
                 sessionStorage.removeItem('cyber_active_session');
                 
-                showModal("MISSION COMPLETED", `Final Score: ${team.score}\nSolved: ${team.solved.length} / ${QUESTIONS.length}\nAwait further commands from Overseer.`);
+                showModal("MISSION COMPLETED", `Final Score: ${{team.score}}\\nSolved: ${{team.solved.length}} / ${{QUESTIONS.length}}\\nAwait further commands from Overseer.`);
                 
-                setTimeout(() => { location.reload(); }, 3000);
-            }
-        };
+                setTimeout(() => {{ location.reload(); }}, 3000);
+            }}
+        }};
 
-        const enterFullscreen = () => {
+        const enterFullscreen = () => {{
             const elem = document.documentElement;
             if (elem.requestFullscreen) return elem.requestFullscreen();
             if (elem.webkitRequestFullscreen) return elem.webkitRequestFullscreen();
             return Promise.resolve();
-        };
+        }};
 
-        document.addEventListener('fullscreenchange', (event) => {
-            if (!document.fullscreenElement && state.teamId !== null && document.getElementById('view-game').classList.contains('hidden-view') === false) {
+        document.addEventListener('fullscreenchange', (event) => {{
+            if (!document.fullscreenElement && state.teamId !== null && document.getElementById('view-game').classList.contains('hidden-view') === false) {{
                 db.teams[state.teamId].flags += 1;
                 saveDB();
                 showModal("PROTOCOL BREACH", "Full screen exit detected. Incident has been logged and flagged on the Overseer console.");
-            }
-        });
+            }}
+        }});
 
-        window.startTimer = () => {
+        window.startTimer = () => {{
             if(state.timerInterval) clearInterval(state.timerInterval);
-            state.timerInterval = setInterval(() => {
+            state.timerInterval = setInterval(() => {{
                 const team = db.teams[state.teamId];
                 team.time += 1;
                 saveDB();
                 updateTimerDisplay(team.time);
-            }, 1000);
-        };
+            }}, 1000);
+        }};
 
-        const updateTimerDisplay = (t) => {
+        const updateTimerDisplay = (t) => {{
             const m = Math.floor(t / 60).toString().padStart(2, '0');
             const s = (t % 60).toString().padStart(2, '0');
-            document.getElementById('timer').innerText = `${m}:${s}`;
-        };
+            document.getElementById('timer').innerText = `${{m}}:${{s}}`;
+        }};
 
-        window.renderGrid = () => {
+        window.renderGrid = () => {{
             const root = document.getElementById('grid-root');
             const team = db.teams[state.teamId];
             
             // Performance fix: build the innerHTML completely as a string before applying to the DOM
             let gridHtml = '';
-            for(let i=0; i<GRID_H*GRID_W; i++) {
+            for(let i=0; i<GRID_H*GRID_W; i++) {{
                 const x = i % GRID_W;
                 const y = Math.floor(i / GRID_W);
                 
                 const overlappingQuestions = QUESTIONS.filter(q => q.dir === 'across' ? (y===q.y && x>=q.x && x<q.x+q.len) : (x===q.x && y>=q.y && y<q.y+q.len));
                 const startMatch = QUESTIONS.find(q => q.x===x && q.y===y); 
                 
-                let html = `<div class="grid-cell" id="cell-${x}-${y}">`;
+                let html = `<div class="grid-cell" id="cell-${{x}}-${{y}}">`;
                 
-                if(overlappingQuestions.length > 0) {
+                if(overlappingQuestions.length > 0) {{
                     const solvedQ = overlappingQuestions.find(q => team.solved.includes(q.id));
                     const mainQ = (state.activeQ && overlappingQuestions.some(q => q.id === state.activeQ.id)) ? state.activeQ : overlappingQuestions[0];
                     const isSelected = state.activeQ && mainQ.id === state.activeQ.id;
                     
                     let letter = '';
-                    if(solvedQ) {
+                    if(solvedQ) {{
                         letter = solvedQ.dir === 'across' ? solvedQ.ans[x - solvedQ.x] : solvedQ.ans[y - solvedQ.y];
-                    }
+                    }}
                     
                     let classes = "active";
                     if(solvedQ) classes += " solved";
                     if(isSelected) classes += " selected";
                     
-                    html = `<div class="grid-cell ${classes}" id="cell-${x}-${y}" onclick="selectQuestion('${mainQ.id}')">
-                        ${startMatch ? `<span style="position:absolute; top:2px; left:2px; line-height:1; font-size:clamp(6px, 0.7vw, 10px); color:#06b6d4;">${startMatch.display_id}</span>` : ''}
-                        <span>${letter}</span>
+                    html = `<div class="grid-cell ${{classes}}" id="cell-${{x}}-${{y}}" onclick="selectQuestion('${{mainQ.id}}')">
+                        ${{startMatch ? `<span style="position:absolute; top:2px; left:2px; line-height:1; font-size:clamp(6px, 0.7vw, 10px); color:#06b6d4;">${{startMatch.display_id}}</span>` : ''}}
+                        <span>${{letter}}</span>
                     </div>`;
-                } else {
+                }} else {{
                     html += `</div>`;
-                }
+                }}
                 
                 gridHtml += html;
-            }
+            }}
             
             root.innerHTML = gridHtml;
-        };
+        }};
 
-        window.selectQuestion = (qid) => {
+        window.selectQuestion = (qid) => {{
             const team = db.teams[state.teamId];
             if(team.solved.includes(qid)) return; 
             
@@ -1056,14 +702,14 @@ print(result)`
             
             const promptEl = document.getElementById('decrypt-prompt');
             
-            if (promptEl.classList.contains('hidden')) {
+            if (promptEl.classList.contains('hidden')) {{
                 promptEl.style.transform = "translate(-50%, -50%)";
                 promptEl.style.left = "50%";
                 promptEl.style.top = "25%";
                 promptEl.classList.remove('hidden');
-            }
+            }}
             
-            document.getElementById('active-q-type').innerText = `NODE: [${q.display_id} ${q.dir}]`;
+            document.getElementById('active-q-type').innerText = `NODE: [${{q.display_id}} ${{q.dir}}]`;
             document.getElementById('active-q-hint').innerText = q.hint;
             
             checkHintVisibility();
@@ -1075,9 +721,9 @@ print(result)`
             
             renderGrid();
             updateCluesUI();
-        };
+        }};
 
-        const checkHintVisibility = () => {
+        const checkHintVisibility = () => {{
             const team = db.teams[state.teamId];
             const q = state.activeQ;
             if(!q) return;
@@ -1085,34 +731,34 @@ print(result)`
             if(!team.hintsUsed) team.hintsUsed = [];
 
             const attempts = team.attempts[q.id] || 0;
-            document.getElementById('active-attempts').innerText = `Attempts: ${attempts}`;
+            document.getElementById('active-attempts').innerText = `Attempts: ${{attempts}}`;
             
             const btn = document.getElementById('hint-btn');
             const pythonBox = document.getElementById('active-q-python');
 
-            if(team.hintsUsed.includes(q.id)) {
+            if(team.hintsUsed.includes(q.id)) {{
                 btn.classList.add('hidden');
                 pythonBox.classList.remove('hidden');
                 pythonBox.innerText = q.pythonHint || "No script available for this node.";
-            } else {
+            }} else {{
                 pythonBox.classList.add('hidden');
                 pythonBox.innerText = "";
-                if(attempts >= 2) {
+                if(attempts >= 2) {{
                     btn.classList.remove('hidden');
-                } else {
+                }} else {{
                     btn.classList.add('hidden');
-                }
-            }
-        };
+                }}
+            }}
+        }};
 
-        window.takeHint = () => {
+        window.takeHint = () => {{
             const team = db.teams[state.teamId];
             const q = state.activeQ;
             if(!q) return;
 
             if(!team.hintsUsed) team.hintsUsed = [];
 
-            if(!team.hintsUsed.includes(q.id)) {
+            if(!team.hintsUsed.includes(q.id)) {{
                 team.score -= 60;
                 document.getElementById('stat-score').innerText = team.score;
                 team.hintsUsed.push(q.id);
@@ -1121,29 +767,29 @@ print(result)`
                 
                 document.getElementById('ans-feedback').className = "text-[10px] h-3 text-yellow-500 font-bold uppercase tracking-widest";
                 document.getElementById('ans-feedback').innerText = "HINT ACTIVATED. PENALTY: -60 PTS.";
-                setTimeout(() => {
+                setTimeout(() => {{
                     document.getElementById('ans-feedback').innerText = "";
-                }, 3000);
-            }
-        };
+                }}, 3000);
+            }}
+        }};
 
-        const updateCluesUI = () => {
+        const updateCluesUI = () => {{
             const team = db.teams[state.teamId];
-            QUESTIONS.forEach(q => {
-                const el = document.getElementById(`clue-${q.id}`);
+            QUESTIONS.forEach(q => {{
+                const el = document.getElementById(`clue-${{q.id}}`);
                 if(!el) return;
                 
                 el.classList.remove('selected', 'solved');
                 
-                if(team.solved.includes(q.id)) {
+                if(team.solved.includes(q.id)) {{
                     el.classList.add('solved');
-                } else if(state.activeQ && state.activeQ.id === q.id) {
+                }} else if(state.activeQ && state.activeQ.id === q.id) {{
                     el.classList.add('selected');
-                }
-            });
-        };
+                }}
+            }});
+        }};
 
-        window.submitAnswer = () => {
+        window.submitAnswer = () => {{
             if(!state.activeQ) return;
             const team = db.teams[state.teamId];
             const q = state.activeQ;
@@ -1158,140 +804,146 @@ print(result)`
             const attempts = team.attempts[q.id] || 0;
             team.attempts[q.id] = attempts + 1;
             
-            if(inp === ans) {
+            if(inp === ans) {{
                 team.solved.push(q.id);
                 team.score += 100; 
                 document.getElementById('stat-score').innerText = team.score;
                 document.getElementById('ans-feedback').className = "text-[10px] h-3 text-green-400 font-bold uppercase tracking-widest";
                 document.getElementById('ans-feedback').innerText = "DECRYPTION SUCCESSFUL.";
                 
-                setTimeout(() => {
+                setTimeout(() => {{
                     scan.style.display = 'none'; 
                     closePrompt();
                     checkWinCondition();
-                }, 1200);
-            } else {
+                }}, 1200);
+            }} else {{
                 document.getElementById('ans-feedback').className = "text-[10px] h-3 text-red-500 font-bold uppercase tracking-widest animate-pulse";
                 document.getElementById('ans-feedback').innerText = "ACCESS DENIED. INCORRECT KEY.";
                 document.getElementById('ans-input').value = '';
                 
                 checkHintVisibility(); 
                 
-                setTimeout(() => { scan.style.display = 'none'; }, 1200);
-            }
+                setTimeout(() => {{ scan.style.display = 'none'; }}, 1200);
+            }}
             
             saveDB();
-        };
+        }};
         
-        const checkWinCondition = () => {
+        const checkWinCondition = () => {{
             const team = db.teams[state.teamId];
-            if(team.solved.length >= QUESTIONS.length) {
+            if(team.solved.length >= QUESTIONS.length) {{
                 team.submitted = true;
                 saveDB();
                 clearInterval(state.timerInterval);
                 state.teamId = null;
                 sessionStorage.removeItem('cyber_active_session');
-                showModal("MISSION ACCOMPLISHED", `Grid fully decrypted.\nFinal Score: ${team.score}\nTime: ${document.getElementById('timer').innerText}\n\nAwait further commands.`);
-            }
-        };
+                showModal("MISSION ACCOMPLISHED", `Grid fully decrypted.\\nFinal Score: ${{team.score}}\\nTime: ${{document.getElementById('timer').innerText}}\\n\\nAwait further commands.`);
+            }}
+        }};
 
-        const refreshScoreboard = () => {
+        const refreshScoreboard = () => {{
             const list = document.getElementById('full-leaderboard-list');
             if(!list) return;
             list.innerHTML = '';
             
             const sorted = [...db.teams].sort((a,b) => b.score - a.score || a.time - b.time);
             
-            sorted.forEach((t, i) => {
+            sorted.forEach((t, i) => {{
                 const m = Math.floor(t.time / 60).toString().padStart(2, '0');
                 const s = (t.time % 60).toString().padStart(2, '0');
-                const timeStr = `${m}:${s}`;
+                const timeStr = `${{m}}:${{s}}`;
                 
                 const isMe = state.teamId !== null && db.teams[state.teamId] && db.teams[state.teamId].id === t.id;
                 
                 list.innerHTML += `
-                    <div class="flex justify-between items-center p-3 rounded border mb-2 text-base ${isMe ? 'bg-cyan-900 border-cyan-500 bg-opacity-30' : 'border-cyan-900 border-opacity-30'} transition-all">
+                    <div class="flex justify-between items-center p-3 rounded border mb-2 text-base ${{isMe ? 'bg-cyan-900 border-cyan-500 bg-opacity-30' : 'border-cyan-900 border-opacity-30'}} transition-all">
                         <div class="truncate max-w-[50%]">
-                            <span class="font-bold text-cyan-600 mr-2">${i+1}.</span>
-                            <span class="uppercase tracking-widest text-white font-bold">${t.name}</span>
+                            <span class="font-bold text-cyan-600 mr-2">${{i+1}}.</span>
+                            <span class="uppercase tracking-widest text-white font-bold">${{t.name}}</span>
                         </div>
                         <div class="text-right flex-shrink-0">
-                            <span class="text-green-400 font-bold">${t.score}</span> <span class="text-cyan-900 mx-2">|</span> <span class="text-cyan-600">${timeStr}</span>
-                            ${t.submitted ? `<span class="ml-2 text-yellow-500 font-bold text-[10px]">[SUBMITTED]</span>` : ''}
+                            <span class="text-green-400 font-bold">${{t.score}}</span> <span class="text-cyan-900 mx-2">|</span> <span class="text-cyan-600">${{timeStr}}</span>
+                            ${{t.submitted ? `<span class="ml-2 text-yellow-500 font-bold text-[10px]">[SUBMITTED]</span>` : ''}}
                         </div>
                     </div>
                 `;
-            });
-        };
+            }});
+        }};
 
         // --- UTILS ---
-        window.showView = (vId) => {
-            ['view-auth', 'view-game', 'view-admin', 'view-leaderboard', 'view-admin-login'].forEach(id => {
+        window.showView = (vId) => {{
+            ['view-auth', 'view-game', 'view-admin', 'view-leaderboard', 'view-admin-login'].forEach(id => {{
                 document.getElementById(id).classList.add('hidden-view');
-            });
+            }});
             document.getElementById(vId).classList.remove('hidden-view');
-        };
+        }};
 
-        window.showModal = (t, b) => {
+        window.showModal = (t, b) => {{
             document.getElementById('modal-title').innerText = t;
             document.getElementById('modal-body').innerText = b;
             document.getElementById('modal-overlay').classList.remove('hidden');
-        };
+        }};
 
         window.closeModal = () => document.getElementById('modal-overlay').classList.add('hidden');
 
         // --- ADMIN FUNCTIONS ---
-        window.renderAdminTable = () => {
+        window.renderAdminTable = () => {{
             const body = document.getElementById('admin-table-body');
             body.innerHTML = '';
             
-            db.teams.forEach((t, i) => {
+            db.teams.forEach((t, i) => {{
                 const m = Math.floor(t.time / 60).toString().padStart(2, '0');
                 const s = (t.time % 60).toString().padStart(2, '0');
                 
                 body.innerHTML += `
                     <tr class="hover:bg-yellow-900 hover:bg-opacity-20 transition-colors">
-                        <td class="p-4 text-green-400 font-bold">${t.score}</td>
-                        <td class="p-4 text-cyan-100 font-bold uppercase tracking-widest">${t.name}</td>
-                        <td class="p-4 text-cyan-600 uppercase text-[10px]">${t.agent1} & ${t.agent2}</td>
-                        <td class="p-4 font-mono text-cyan-300">${m}:${s}</td>
-                        <td class="p-4 text-cyan-500">${t.solved.length} / ${QUESTIONS.length}</td>
-                        <td class="p-4 ${t.flags > 0 ? 'text-red-500 font-bold' : 'text-cyan-700'}">${t.flags}</td>
+                        <td class="p-4 text-green-400 font-bold">${{t.score}}</td>
+                        <td class="p-4 text-cyan-100 font-bold uppercase tracking-widest">${{t.name}}</td>
+                        <td class="p-4 text-cyan-600 uppercase text-[10px]">${{t.agent1}} & ${{t.agent2}}</td>
+                        <td class="p-4 font-mono text-cyan-300">${{m}}:${{s}}</td>
+                        <td class="p-4 text-cyan-500">${{t.solved.length}} / ${{QUESTIONS.length}}</td>
+                        <td class="p-4 ${{t.flags > 0 ? 'text-red-500 font-bold' : 'text-cyan-700'}}">${{t.flags}}</td>
                         <td class="p-4 space-x-3">
-                            <button onclick="adminResetTime(${i})" class="text-yellow-500 hover:text-yellow-400 transition-colors" title="Reset Time"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
-                            <button onclick="adminRemoveTeam(${i})" class="text-red-500 hover:text-red-400 transition-colors" title="Remove"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            <button onclick="adminResetTime(${{i}})" class="text-yellow-500 hover:text-yellow-400 transition-colors" title="Reset Time"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
+                            <button onclick="adminRemoveTeam(${{i}})" class="text-red-500 hover:text-red-400 transition-colors" title="Remove"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </td>
                     </tr>
                 `;
-            });
+            }});
             lucide.createIcons();
-        };
+        }};
         
-        window.adminResetTime = (i) => {
-            if(confirm("Reset team timer to zero?")) {
+        window.adminResetTime = (i) => {{
+            if(confirm("Reset team timer to zero?")) {{
                 db.teams[i].time = 0;
                 saveDB();
                 renderAdminTable();
-            }
-        };
+            }}
+        }};
 
-        window.adminRemoveTeam = (i) => {
-            if(confirm("Delete this team completely?")) {
+        window.adminRemoveTeam = (i) => {{
+            if(confirm("Delete this team completely?")) {{
                 db.teams.splice(i, 1);
                 
-                if(state.teamId === i) {
+                if(state.teamId === i) {{
                     state.teamId = null;
                     sessionStorage.removeItem('cyber_active_session');
-                } else if (state.teamId && state.teamId > i) {
+                }} else if (state.teamId && state.teamId > i) {{
                     state.teamId--;
                     sessionStorage.setItem('cyber_active_session', state.teamId);
-                }
+                }}
                 
                 saveDB();
                 renderAdminTable();
-            }
-        };
+            }}
+        }};
 
     </script>
 </body>
 </html>
+"""
+
+with open("c:/Users/sarjare/.gemini/antigravity/scratch/crosssword/index.html", "w") as f:
+    f.write(html)
+    
+shutil.copy("c:/Users/sarjare/.gemini/antigravity/scratch/crosssword/index.html", "c:/Users/sarjare/.gemini/antigravity/scratch/cyber_mission_game/index.html")
