@@ -810,7 +810,12 @@ print(result)`
         // Global save specific to active team
         window.cloudSaveTeam = (teamObj) => {
             if (!fsDb || !teamObj) return;
-            setDoc(doc(fsDb, "teams", teamObj.id.toString()), teamObj).catch(e => console.error(e));
+            setDoc(doc(fsDb, "teams", teamObj.id.toString()), teamObj)
+                .then(() => console.log("Saved to Firebase!"))
+                .catch(e => {
+                    console.error("Firebase Save Error:", e);
+                    alert("FIREBASE ERROR: " + e.message + "\nAre your Firestore security rules definitely set to TRUE?");
+                });
         };
         
         window.cloudRemoveTeam = (teamObjId) => {
