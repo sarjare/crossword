@@ -423,12 +423,13 @@ html = f"""<!DOCTYPE html>
         // *** USER INSTRUCTIONS: PASTE YOUR FIREBASE CONFIGURATION HERE ***
         // Log into Firebase Console -> Open Project Settings -> Copy "firebaseConfig" variables
         const firebaseConfig = {{
-            apiKey: "PASTE_YOUR_API_KEY_HERE",
-            authDomain: "PASTE_YOUR_AUTH_DOMAIN_HERE",
-            projectId: "PASTE_YOUR_PROJECT_ID_HERE",
-            storageBucket: "PASTE_YOUR_STORAGE_BUCKET_HERE",
-            messagingSenderId: "PASTE_YOUR_SENDER_ID_HERE",
-            appId: "PASTE_YOUR_APP_ID_HERE"
+            apiKey: "AIzaSyDMm2erMuAv9q_4Ln_Yu5j2hnNMm23W4AM",
+            authDomain: "cyberverse-8697e.firebaseapp.com",
+            projectId: "cyberverse-8697e",
+            storageBucket: "cyberverse-8697e.firebasestorage.app",
+            messagingSenderId: "211630821772",
+            appId: "1:211630821772:web:4fe159480c9aa13c4186a9",
+            measurementId: "G-2EMS3J3ERB"
         }};
         
         let app, fsDb;
