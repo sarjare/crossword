@@ -313,13 +313,53 @@
             </div>
         </div>
 
+        <!-- 1.5 WAITING ROOM VIEW -->
+        <div id="view-waiting" class="hidden-view flex flex-col items-center justify-center flex-grow space-y-8 animate-in fade-in">
+            <div class="text-center space-y-2">
+                <i data-lucide="shield" class="w-16 h-16 text-yellow-500 mx-auto mb-4 font-bold animate-pulse"></i>
+                <h2 class="text-4xl orbitron text-yellow-500 glow">AWAITING OVERSEER</h2>
+                <p class="text-cyan-600 font-mono text-xs tracking-widest">SECURE CONNECTION ESTABLISHED. STAND BY FOR LAUNCH.</p>
+            </div>
+            <div class="cyber-card p-6 max-w-sm w-full text-center border-yellow-900 border-opacity-50">
+                <div class="flex items-center justify-center gap-3 text-cyan-400">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+                    <span class="text-xs font-bold tracking-widest uppercase font-mono">Agent Node Online</span>
+                </div>
+            </div>
+        </div>
+
         <!-- 5. ADMIN VIEW -->
         <div id="view-admin" class="hidden-view space-y-6">
             <div class="flex justify-between items-end border-b border-cyan-900 pb-4">
                 <h2 class="text-3xl orbitron text-yellow-500">OVERSEER CONSOLE</h2>
                 <div class="flex gap-2">
+                    <button onclick="window.adminStartGame()" id="admin-start-btn" class="px-4 py-2 bg-green-900 bg-opacity-30 text-green-400 border border-green-700 hover:bg-green-500 hover:text-black transition-all font-bold orbitron text-xs rounded shadow-[0_0_10px_rgba(34,197,94,0.2)]">START GAME</button>
+                    <button onclick="window.adminEndGame()" id="admin-end-btn" class="px-4 py-2 bg-red-900 bg-opacity-30 text-red-400 border border-red-700 hover:bg-red-500 hover:text-white transition-all font-bold orbitron text-xs rounded shadow-[0_0_10px_rgba(239,68,68,0.2)]">END GAME</button>
                     <button onclick="window.adminToggleTimerMode()" id="admin-timer-mode-btn" class="px-4 py-2 border border-cyan-800 text-cyan-600 hover:bg-cyan-900 hover:text-cyan-400 transition-all font-bold orbitron text-xs rounded">TIMER MODE: COUNT UP</button>
                     <button onclick="window.closeAdmin()" class="px-6 py-2 text-xs border border-cyan-500 text-cyan-400 hover:bg-cyan-900 hover:text-white transition-all font-bold tracking-widest rounded">EXIT</button>
+                </div>
+            </div>
+
+            <!-- Rules Configuration Panel -->
+            <div class="cyber-card p-4 grid grid-cols-2 md:grid-cols-4 gap-4 border-yellow-900 border-opacity-30">
+                <div>
+                    <label class="block text-[9px] font-bold tracking-widest uppercase mb-1 text-cyan-600">Hint Threshold</label>
+                    <input type="number" id="cfg-hint-attempts" class="bg-black border border-cyan-900 text-cyan-100 p-1.5 text-xs w-full font-mono rounded" value="10">
+                </div>
+                <div>
+                    <label class="block text-[9px] font-bold tracking-widest uppercase mb-1 text-cyan-600">Points / Correct</label>
+                    <input type="number" id="cfg-points-correct" class="bg-black border border-cyan-900 text-cyan-100 p-1.5 text-xs w-full font-mono rounded" value="100">
+                </div>
+                <div>
+                    <label class="block text-[9px] font-bold tracking-widest uppercase mb-1 text-cyan-600">Post-Hint Penalty</label>
+                    <input type="number" id="cfg-post-hint" class="bg-black border border-cyan-900 text-cyan-100 p-1.5 text-xs w-full font-mono rounded" value="2">
+                </div>
+                <div>
+                    <label class="block text-[9px] font-bold tracking-widest uppercase mb-1 text-cyan-600">Hint Penalty</label>
+                    <input type="number" id="cfg-hint-cost" class="bg-black border border-cyan-900 text-cyan-100 p-1.5 text-xs w-full font-mono rounded" value="60">
+                </div>
+                <div class="col-span-2 md:col-span-4 text-right">
+                    <button onclick="window.adminSaveRules()" class="px-4 py-1.5 border border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-all font-bold orbitron text-[10px] rounded tracking-widest">APPLY RULES</button>
                 </div>
             </div>
             
@@ -340,6 +380,21 @@
                     <tbody id="admin-table-body" class="divide-y divide-yellow-900 border-t border-yellow-900 text-cyan-100"></tbody>
                 </table>
             </div>
+        </div>
+
+        <!-- 6. PODIUM VIEW -->
+        <div id="view-podium" class="hidden-view flex flex-col items-center justify-center flex-grow space-y-12 animate-in zoom-in">
+            <div class="text-center space-y-2">
+                <i data-lucide="trophy" class="w-16 h-16 text-yellow-400 mx-auto mb-2 animate-bounce"></i>
+                <h2 class="text-4xl orbitron text-yellow-400 glow font-black tracking-wider">CHAMPIONS</h2>
+                <p class="text-cyan-600 uppercase text-xs tracking-widest">Network Grid Fully Decrypted</p>
+            </div>
+
+            <div id="podium-container" class="flex items-end justify-center gap-6 w-full max-w-4xl px-4 h-[300px]">
+                <!-- Populated dynamically -->
+            </div>
+
+            <button onclick="window.showView('view-leaderboard')" class="px-8 py-3 border border-cyan-500 text-cyan-400 hover:bg-cyan-900 hover:text-white transition-all font-bold orbitron text-xs tracking-widest rounded">FULL LEADERBOARD</button>
         </div>
 
     </div>
@@ -822,8 +877,12 @@ print(result)`
             deleteDoc(doc(fsDb, "teams", teamObjId.toString())).catch(e => console.error(e));
         };
 
+        window.cloudSaveRules = (rulesObj) => {
+            if (!fsDb || !rulesObj) return;
+            setDoc(doc(fsDb, "settings", "rules"), rulesObj).catch(e => console.error(e));
+        };
+
         // Real-Time Firebase Listener
-        if(fsDb) {
             onSnapshot(collection(fsDb, "teams"), (querySnapshot) => {
                 const updatedTeams = [];
                 querySnapshot.forEach((doc) => {
@@ -832,10 +891,38 @@ print(result)`
                 
                 window.db.teams = updatedTeams;
                 
-                // Re-render UI Elements if they are currently visible
                 if(!document.getElementById('view-admin').classList.contains('hidden-view')) window.renderAdminTable();
                 if(!document.getElementById('view-leaderboard').classList.contains('hidden-view')) window.refreshScoreboard();
                 if(window.state.teamId !== null) window.updateCluesUI();
+            });
+
+            // Rules Document Listener
+            onSnapshot(doc(fsDb, "settings", "rules"), (docSnap) => {
+                if (docSnap.exists()) {
+                    window.rules = docSnap.data();
+                    
+                    // Sync UI inputs if admin is open
+                    const cfgHA = document.getElementById('cfg-hint-attempts');
+                    const cfgPC = document.getElementById('cfg-points-correct');
+                    const cfgPH = document.getElementById('cfg-post-hint');
+                    const cfgHC = document.getElementById('cfg-hint-cost');
+                    if(cfgHA && window.rules.hintAttempts) cfgHA.value = window.rules.hintAttempts;
+                    if(cfgPC && window.rules.pointsCorrect) cfgPC.value = window.rules.pointsCorrect;
+                    if(cfgPH && window.rules.postHintPenalty) cfgPH.value = window.rules.postHintPenalty;
+                    if(cfgHC && window.rules.hintPenalty) cfgHC.value = window.rules.hintPenalty;
+                } else {
+                    window.rules = {
+                        hintAttempts: 10,
+                        pointsCorrect: 100,
+                        postHintPenalty: 2,
+                        hintPenalty: 60,
+                        gameStarted: false,
+                        gameEnded: false,
+                        timerDirection: 'up'
+                    };
+                    window.cloudSaveRules(window.rules);
+                }
+                window.applyRulesState();
             });
         }
 
@@ -955,7 +1042,7 @@ print(result)`
 
         window.startGame = () => {
             if(!fsDb) {
-                window.showModal("FATAL ERROR", "Firebase is not configured! Please add the Firebase codesnippet to index.html to deploy a global database.");
+                window.showModal("FATAL ERROR", "Firebase is not configured!");
                 return;
             }
             
@@ -976,18 +1063,27 @@ print(result)`
                 agent1: p1,
                 agent2: p2,
                 score: 0,
-                time: 0,
+                time: (window.rules && window.rules.timerDirection === 'down') ? 3600 : 0,
                 flags: 0,
                 solved: [],
                 hintsUsed: [],
                 attempts: {},
-                submitted: false
+                submitted: false,
+                timerDirection: (window.rules && window.rules.timerDirection) || 'up'
             };
 
             window.cloudSaveTeam(newTeam);
             window.state.teamId = newTeamId;
             sessionStorage.setItem('cyber_active_session', window.state.teamId);
 
+            if (window.rules && window.rules.gameStarted) {
+                window.startGameExecution();
+            } else {
+                window.showView('view-waiting');
+            }
+        };
+
+        window.startGameExecution = () => {
             window.enterFullscreen().then(() => { window.resumeGame(); }).catch(err => { window.resumeGame(); });
         };
 
@@ -1178,7 +1274,8 @@ print(result)`
             } else {
                 pythonBox.classList.add('hidden');
                 pythonBox.innerText = "";
-                if(attempts >= 10) {
+                const threshold = (window.rules && window.rules.hintAttempts !== undefined) ? window.rules.hintAttempts : 10;
+                if(attempts >= threshold) {
                     btn.classList.remove('hidden');
                 } else {
                     btn.classList.add('hidden');
@@ -1194,7 +1291,8 @@ print(result)`
             if(!team.hintsUsed) team.hintsUsed = [];
 
             if(!team.hintsUsed.includes(q.id)) {
-                team.score -= 60;
+                const cost = (window.rules && window.rules.hintPenalty !== undefined) ? window.rules.hintPenalty : 60;
+                team.score -= cost;
                 document.getElementById('stat-score').innerText = team.score;
                 team.hintsUsed.push(q.id);
                 
@@ -1245,7 +1343,8 @@ print(result)`
             
             if(inp === ans) {
                 team.solved.push(q.id);
-                team.score += 100; 
+                const points = (window.rules && window.rules.pointsCorrect !== undefined) ? window.rules.pointsCorrect : 100;
+                team.score += points; 
                 document.getElementById('stat-score').innerText = team.score;
                 document.getElementById('ans-feedback').className = "text-[10px] h-3 text-green-400 font-bold uppercase tracking-widest";
                 document.getElementById('ans-feedback').innerText = "DECRYPTION SUCCESSFUL.";
@@ -1261,7 +1360,8 @@ print(result)`
                 document.getElementById('ans-input').value = '';
                 
                 if(team.hintsUsed && team.hintsUsed.includes(q.id)) {
-                    team.score -= 2;
+                    const penalty = (window.rules && window.rules.postHintPenalty !== undefined) ? window.rules.postHintPenalty : 2;
+                    team.score -= penalty;
                     document.getElementById('stat-score').innerText = team.score;
                 }
                 
@@ -1410,6 +1510,83 @@ print(result)`
                     sessionStorage.removeItem('cyber_active_session');
                 }
                 window.renderAdminTable();
+            }
+        };
+
+        window.applyRulesState = () => {
+            if (!window.rules) return;
+            
+            // 1. Check Game Started
+            if (window.rules.gameStarted && window.state.teamId && document.getElementById('view-waiting').classList.contains('hidden-view') === false) {
+                window.startGameExecution();
+            }
+            
+            // 2. Check Game Ended
+            if (window.rules.gameEnded) {
+                window.showPodium();
+            }
+        };
+
+        window.showPodium = () => {
+            window.showView('view-podium');
+            const container = document.getElementById('podium-container');
+            if(!container) return;
+            container.innerHTML = '';
+
+            if (!window.db || !window.db.teams || window.db.teams.length === 0) return;
+
+            const sorted = [...window.db.teams].sort((a,b) => b.score - a.score || a.time - b.time);
+            
+            const first = sorted[0];
+            const second = sorted[1];
+            const third = sorted[2];
+
+            const getPodiumHtml = (team, place, height, color) => {
+                if(!team) return `<div class="flex-1"></div>`;
+                return `
+                    <div class="flex flex-col items-center flex-1 h-full justify-end">
+                        <div class="text-center mb-2">
+                            <div class="text-sm font-bold truncate text-white max-w-[120px] uppercase font-mono tracking-widest">${team.name}</div>
+                            <div class="text-xs text-green-400 font-bold mt-1">${team.score} PTS</div>
+                        </div>
+                        <div class="w-full ${color} bg-opacity-30 border-2 ${color.replace('bg-', 'border-')} rounded-t-lg flex flex-col items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.5)]" style="height: ${height}px;">
+                            <span class="text-4xl font-black orbitron text-white text-opacity-80">${place}</span>
+                        </div>
+                    </div>
+                `;
+            };
+
+            container.innerHTML = `
+                ${getPodiumHtml(second, '2ND', 180, 'bg-slate-500')}
+                ${getPodiumHtml(first, '1ST', 250, 'bg-yellow-500')}
+                ${getPodiumHtml(third, '3RD', 120, 'bg-amber-700')}
+            `;
+            if (window.lucide) lucide.createIcons();
+        };
+
+        window.adminSaveRules = () => {
+            if(!window.rules) return;
+            window.rules.hintAttempts = parseInt(document.getElementById('cfg-hint-attempts').value) || 10;
+            window.rules.pointsCorrect = parseInt(document.getElementById('cfg-points-correct').value) || 100;
+            window.rules.postHintPenalty = parseInt(document.getElementById('cfg-post-hint').value) || 2;
+            window.rules.hintPenalty = parseInt(document.getElementById('cfg-hint-cost').value) || 60;
+            
+            window.cloudSaveRules(window.rules);
+            alert("Rules applied globally!");
+        };
+
+        window.adminStartGame = () => {
+            if(!window.rules) return;
+            window.rules.gameStarted = true;
+            window.rules.gameEnded = false;
+            window.cloudSaveRules(window.rules);
+        };
+
+        window.adminEndGame = () => {
+            if(!window.rules) return;
+            if(confirm("Terminate global session and reveal podium?")) {
+                window.rules.gameEnded = true;
+                window.cloudSaveRules(window.rules);
             }
         };
 
