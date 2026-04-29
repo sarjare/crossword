@@ -409,6 +409,63 @@
         </div>
     </div>
 
+    <script>
+        const ADMIN_PASS = "admin123";
+
+        window.showView = (vId) => {
+            const views = ['view-auth', 'view-game', 'view-leaderboard', 'view-admin-login', 'view-admin', 'view-waiting', 'view-podium'];
+            views.forEach(v => {
+                const el = document.getElementById(v);
+                if(el) el.classList.add('hidden-view');
+            });
+            const target = document.getElementById(vId);
+            if(target) target.classList.remove('hidden-view');
+        };
+
+        window.goAdminLogin = () => {
+            document.getElementById('admin-error').classList.add('hidden');
+            document.getElementById('admin-pass-input').value = '';
+            document.getElementById('admin-login-btn').classList.add('hidden');
+            window.showView('view-admin-login');
+        };
+
+        window.closeAdminLogin = () => {
+            if(window.state && window.state.teamId !== null) window.showView('view-game');
+            else window.showView('view-auth');
+            document.getElementById('admin-login-btn').classList.remove('hidden');
+        };
+
+        window.submitAdminLogin = () => {
+            const val = document.getElementById('admin-pass-input').value.trim();
+            if(val.toLowerCase() === ADMIN_PASS.toLowerCase()) {
+                if(document.fullscreenElement) document.exitFullscreen();
+                if(window.renderAdminTable) window.renderAdminTable();
+                window.showView('view-admin');
+            } else {
+                document.getElementById('admin-error').classList.remove('hidden');
+            }
+        };
+
+        window.closeAdmin = () => {
+            if(window.state && window.state.teamId !== null) window.showView('view-game');
+            else window.showView('view-auth');
+            document.getElementById('admin-login-btn').classList.remove('hidden');
+        };
+
+        window.openInstructions = () => document.getElementById('instructions-modal').classList.remove('hidden');
+        window.closeInstructions = () => document.getElementById('instructions-modal').classList.add('hidden');
+
+        window.showModal = (title, msg) => {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-body').innerText = msg;
+            document.getElementById('modal-overlay').classList.remove('hidden');
+        };
+
+        window.closeModal = () => {
+            document.getElementById('modal-overlay').classList.add('hidden');
+        };
+    </script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
         import { getFirestore, collection, doc, onSnapshot, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
@@ -854,7 +911,6 @@ print(result)`
 }
 ];
 
-        const ADMIN_PASS = "admin123";
         const GRID_W = 23;
         const GRID_H = 25;
         
@@ -981,55 +1037,8 @@ print(result)`
             window.updateCluesUI();
         };
         
-        window.openInstructions = () => document.getElementById('instructions-modal').classList.remove('hidden');
-        window.closeInstructions = () => document.getElementById('instructions-modal').classList.add('hidden');
-
-        window.populateCluesList = () => {
-            const across = QUESTIONS.filter(q => q.dir === 'across').sort((a,b) => a.display_id - b.display_id);
-            const down = QUESTIONS.filter(q => q.dir === 'down').sort((a,b) => a.display_id - b.display_id);
-            
-            const renderList = (arr, containerId) => {
-                document.getElementById(containerId).innerHTML = arr.map(q => `
-                    <div id="clue-${q.id}" class="clue-list-item p-1.5 rounded mb-1 flex items-start gap-1.5 leading-snug" onclick="window.selectQuestion('${q.id}')">
-                        <span class="font-bold text-cyan-500">${q.display_id}.</span>
-                        <span>${q.hint}</span>
-                    </div>
-                `).join('');
-            };
-            
-            renderList(across, 'clues-across');
-            renderList(down, 'clues-down');
-        };
-
-        window.goAdminLogin = () => {
-            document.getElementById('admin-error').classList.add('hidden');
-            document.getElementById('admin-pass-input').value = '';
-            document.getElementById('admin-login-btn').classList.add('hidden');
-            window.showView('view-admin-login');
-        };
-
-        window.closeAdminLogin = () => {
-            if(window.state.teamId !== null) window.showView('view-game');
-            else window.showView('view-auth');
-            document.getElementById('admin-login-btn').classList.remove('hidden');
-        };
-
-        window.submitAdminLogin = () => {
-            const val = document.getElementById('admin-pass-input').value.trim();
-            if(val.toLowerCase() === ADMIN_PASS.toLowerCase()) {
-                if(document.fullscreenElement) document.exitFullscreen();
-                window.renderAdminTable();
-                window.showView('view-admin');
-            } else {
-                document.getElementById('admin-error').classList.remove('hidden');
-            }
-        };
-
-        window.closeAdmin = () => {
-            if(window.state.teamId !== null) window.showView('view-game');
-            else window.showView('view-auth');
-            document.getElementById('admin-login-btn').classList.remove('hidden');
-        };
+        // UI view logic handled in plain script block above module.
+        window.populateCluesList();
 
         window.openLeaderboard = () => {
             window.refreshScoreboard();
