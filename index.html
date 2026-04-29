@@ -317,7 +317,10 @@
         <div id="view-admin" class="hidden-view space-y-6">
             <div class="flex justify-between items-end border-b border-cyan-900 pb-4">
                 <h2 class="text-3xl orbitron text-yellow-500">OVERSEER CONSOLE</h2>
-                <button onclick="window.closeAdmin()" class="px-6 py-2 text-xs border border-cyan-500 text-cyan-400 hover:bg-cyan-900 hover:text-white transition-all font-bold tracking-widest rounded">EXIT</button>
+                <div class="flex gap-2">
+                    <button onclick="window.adminToggleTimerMode()" id="admin-timer-mode-btn" class="px-4 py-2 border border-cyan-800 text-cyan-600 hover:bg-cyan-900 hover:text-cyan-400 transition-all font-bold orbitron text-xs rounded">TIMER MODE: COUNT UP</button>
+                    <button onclick="window.closeAdmin()" class="px-6 py-2 text-xs border border-cyan-500 text-cyan-400 hover:bg-cyan-900 hover:text-white transition-all font-bold tracking-widest rounded">EXIT</button>
+                </div>
             </div>
             
             <div class="cyber-card overflow-hidden overflow-x-auto rounded-xl border-yellow-900 border-opacity-50">
@@ -330,6 +333,7 @@
                             <th class="p-4">TIME</th>
                             <th class="p-4">SOLVED</th>
                             <th class="p-4">FLAGS</th>
+                            <th class="p-4">HINTS</th>
                             <th class="p-4">ACTIONS</th>
                         </tr>
                     </thead>
@@ -1056,7 +1060,13 @@ print(result)`
                 const team = window.db.teams.find(t => t.id === window.state.teamId);
                 if(!team) return;
                 
-                team.time += 1;
+                if (team.timerDirection === 'down') {
+                    team.time = (team.time === undefined || team.time === 0) ? 3600 : team.time - 1;
+                    if (team.time < 0) team.time = 0;
+                } else {
+                    team.time = (team.time || 0) + 1;
+                }
+                
                 localTimeCounter += 1;
                 
                 // Rate-limited push to Firebase: Only save time to cloud every 10 seconds to save writes
@@ -1168,7 +1178,7 @@ print(result)`
             } else {
                 pythonBox.classList.add('hidden');
                 pythonBox.innerText = "";
-                if(attempts >= 2) {
+                if(attempts >= 10) {
                     btn.classList.remove('hidden');
                 } else {
                     btn.classList.add('hidden');
@@ -1250,6 +1260,11 @@ print(result)`
                 document.getElementById('ans-feedback').innerText = "ACCESS DENIED. INCORRECT KEY.";
                 document.getElementById('ans-input').value = '';
                 
+                if(team.hintsUsed && team.hintsUsed.includes(q.id)) {
+                    team.score -= 2;
+                    document.getElementById('stat-score').innerText = team.score;
+                }
+                
                 window.checkHintVisibility(); 
                 
                 setTimeout(() => { scan.style.display = 'none'; }, 1200);
@@ -1327,6 +1342,10 @@ print(result)`
             const body = document.getElementById('admin-table-body');
             body.innerHTML = '';
             
+            const currentMode = (window.db.teams && window.db.teams.length > 0) ? (window.db.teams[0].timerDirection || 'up') : 'up';
+            const modeBtn = document.getElementById('admin-timer-mode-btn');
+            if(modeBtn) modeBtn.innerText = `TIMER MODE: ${currentMode === 'up' ? 'COUNT UP' : 'COUNT DOWN'}`;
+
             if (window.db && window.db.teams && window.db.teams.length > 0) {
                 window.db.teams.forEach((t, i) => {
                     const teamTime = t.time || 0;
@@ -1340,6 +1359,8 @@ print(result)`
                     const agent1 = t.agent1 || 'N/A';
                     const agent2 = t.agent2 || 'N/A';
                     const teamId = t.id || '';
+                    const hintsCount = (t.hintsUsed || []).length;
+                    const usedAllHints = hintsCount >= QUESTIONS.length;
                     
                     body.innerHTML += `
                         <tr class="hover:bg-yellow-900 hover:bg-opacity-20 transition-colors">
@@ -1349,6 +1370,7 @@ print(result)`
                             <td class="p-4 font-mono text-cyan-300">${m}:${s}</td>
                             <td class="p-4 text-cyan-500">${solvedCount} / ${QUESTIONS.length}</td>
                             <td class="p-4 ${flagsCount > 0 ? 'text-red-500 font-bold' : 'text-cyan-700'}">${flagsCount}</td>
+                            <td class="p-4 ${usedAllHints ? 'text-red-500 font-bold animate-pulse' : 'text-cyan-500'}">${hintsCount}</td>
                             <td class="p-4 space-x-3">
                                 <button onclick="window.adminResetTime('${teamId}')" class="text-yellow-500 hover:text-yellow-400 transition-colors" title="Reset Time"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
                                 <button onclick="window.adminRemoveTeam('${teamId}')" class="text-red-500 hover:text-red-400 transition-colors" title="Remove"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
@@ -1388,6 +1410,27 @@ print(result)`
                     sessionStorage.removeItem('cyber_active_session');
                 }
                 window.renderAdminTable();
+            }
+        };
+
+        window.adminToggleTimerMode = () => {
+            const currentMode = (window.db.teams && window.db.teams.length > 0) ? (window.db.teams[0].timerDirection || 'up') : 'up';
+            const newMode = currentMode === 'up' ? 'down' : 'up';
+            
+            if(confirm(`Switch all teams to ${newMode === 'up' ? 'COUNT UP (from 0)' : 'COUNT DOWN (from 60m)'}?`)) {
+                if(window.db && window.db.teams) {
+                    window.db.teams.forEach(t => {
+                        t.timerDirection = newMode;
+                        if (newMode === 'down') {
+                            t.time = 3600; 
+                        } else {
+                            t.time = 0; 
+                        }
+                        window.cloudSaveTeam(t);
+                    });
+                }
+                const btn = document.getElementById('admin-timer-mode-btn');
+                if(btn) btn.innerText = `TIMER MODE: ${newMode === 'up' ? 'COUNT UP' : 'COUNT DOWN'}`;
             }
         };
 
