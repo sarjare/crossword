@@ -1334,6 +1334,9 @@ print(result)`
                 const team = window.db.teams.find(t => t.id === window.state.teamId);
                 if(!team) return;
                 
+                // Do not tick if game has not officially started
+                if(!window.rules || !window.rules.gameStarted) return;
+                
                 if (team.timerDirection === 'down') {
                     team.time = (team.time === undefined || team.time === 0) ? 3600 : team.time - 1;
                     if (team.time < 0) team.time = 0;
