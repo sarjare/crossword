@@ -148,6 +148,7 @@
         .cursor-move { cursor: grab; }
         .cursor-move:active { cursor: grabbing; }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="p-4 md:p-6 relative text-white">
     <div class="scanline" id="scanline"></div>
@@ -226,6 +227,7 @@
             <div class="flex gap-2 items-center mt-3 md:mt-0 flex-wrap justify-center">
                 <button onclick="window.openInstructions()" class="text-[10px] border border-green-800 px-3 py-1.5 hover:bg-green-900 hover:text-green-400 transition-all font-bold orbitron text-green-500 rounded">INSTRUCTIONS</button>
                 <button onclick="window.surrenderGame()" id="surrender-btn" class="hidden-view text-[10px] border border-red-900 px-3 py-1.5 hover:bg-red-900 hover:text-white transition-all font-bold orbitron text-red-500 rounded">SUBMIT EARLY</button>
+                <button onclick="window.exitToHome()" id="exit-btn" class="hidden-view text-[10px] border border-gray-600 px-3 py-1.5 hover:bg-gray-800 hover:text-white transition-all font-bold orbitron text-gray-400 rounded">EXIT TO HOME</button>
                 <button onclick="window.openLeaderboard()" id="leaderboard-btn" class="hidden-view text-[10px] border border-blue-900 px-3 py-1.5 hover:bg-blue-900 hover:text-white transition-all font-bold orbitron text-blue-400 rounded">LEADERBOARD</button>
                 <button onclick="window.goAdminLogin()" id="admin-login-btn" class="text-[10px] border border-cyan-900 px-3 py-1.5 hover:bg-cyan-900 hover:text-cyan-400 transition-all font-bold orbitron text-cyan-700 rounded">OVERSEER</button>
             </div>
@@ -259,7 +261,17 @@
         </div>
 
         <!-- 2. MAIN GAME VIEW -->
-        <div id="view-game" class="hidden-view main-workspace flex flex-col lg:flex-row gap-6 pointer-events-none opacity-50 transition-opacity duration-1000 w-full" style="filter: blur(5px);">
+        <div id="view-game" class="hidden-view main-workspace flex flex-col lg:flex-row gap-6 pointer-events-none opacity-50 transition-opacity duration-1000 w-full relative" style="filter: blur(5px);">
+            
+            <!-- GRID LOCK OVERLAY -->
+            <div id="grid-lock-overlay" class="absolute inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 backdrop-blur-sm rounded-xl">
+                <div class="text-center space-y-4">
+                    <i data-lucide="lock" class="w-20 h-20 text-red-500 mx-auto animate-pulse"></i>
+                    <h2 class="text-4xl orbitron text-red-500 font-bold tracking-widest drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]">GRID LOCKED</h2>
+                    <p class="text-cyan-300 tracking-widest font-mono uppercase">Awaiting Overseer Launch Sequence...</p>
+                </div>
+            </div>
+
             <div class="lg:w-2/3 flex flex-col gap-4 h-full pointer-events-auto min-h-0">
                 <div class="cyber-card flex-grow p-4 md:p-6 rounded-xl flex flex-col items-center justify-center relative bg-black bg-opacity-50 border-opacity-60 overflow-hidden shadow-inner">
                     <h3 class="absolute top-0 left-0 bg-cyan-900 bg-opacity-80 px-4 py-1.5 text-xs m-3 rounded-br-lg font-bold tracking-widest border-b border-r border-cyan-500 shadow-md z-10">
@@ -292,7 +304,10 @@
         <div id="view-leaderboard" class="hidden-view flex flex-col items-center justify-start w-full h-full max-w-4xl mx-auto space-y-6">
             <div class="w-full flex justify-between items-end border-b border-cyan-900 pb-4">
                 <h2 class="text-3xl orbitron text-blue-400">GLOBAL LEADERBOARD</h2>
-                <button onclick="window.closeLeaderboard()" class="px-6 py-2 text-xs border border-cyan-500 text-cyan-400 hover:bg-cyan-900 hover:text-white transition-all font-bold tracking-widest rounded">BACK TO GAME</button>
+                <div class="flex gap-3">
+                    <button onclick="window.downloadLeaderboardPDF()" class="px-6 py-2 text-xs border border-green-500 text-green-400 hover:bg-green-900 hover:text-white transition-all font-bold tracking-widest rounded shadow-[0_0_10px_rgba(34,197,94,0.2)]">DOWNLOAD PDF</button>
+                    <button id="leaderboard-back-btn" onclick="window.closeLeaderboard()" class="px-6 py-2 text-xs border border-cyan-500 text-cyan-400 hover:bg-cyan-900 hover:text-white transition-all font-bold tracking-widest rounded">BACK TO GAME</button>
+                </div>
             </div>
             <div class="cyber-card w-full p-4 rounded-xl flex-grow overflow-hidden flex flex-col">
                 <div class="overflow-y-auto flex-grow text-sm space-y-2 pr-2 custom-scrollbar" id="full-leaderboard-list"></div>
@@ -333,9 +348,14 @@
             <div class="flex justify-between items-end border-b border-cyan-900 pb-4">
                 <h2 class="text-3xl orbitron text-yellow-500">OVERSEER CONSOLE</h2>
                 <div class="flex gap-2">
-                    <button onclick="window.adminStartGame()" id="admin-start-btn" class="px-4 py-2 bg-green-900 bg-opacity-30 text-green-400 border border-green-700 hover:bg-green-500 hover:text-black transition-all font-bold orbitron text-xs rounded shadow-[0_0_10px_rgba(34,197,94,0.2)]">START GAME</button>
-                    <button onclick="window.adminEndGame()" id="admin-end-btn" class="px-4 py-2 bg-red-900 bg-opacity-30 text-red-400 border border-red-700 hover:bg-red-500 hover:text-white transition-all font-bold orbitron text-xs rounded shadow-[0_0_10px_rgba(239,68,68,0.2)]">END GAME</button>
-                    <button onclick="window.adminToggleTimerMode()" id="admin-timer-mode-btn" class="px-4 py-2 border border-cyan-800 text-cyan-600 hover:bg-cyan-900 hover:text-cyan-400 transition-all font-bold orbitron text-xs rounded">TIMER MODE: COUNT UP</button>
+                    <button onclick="window.adminWipeSession()" class="px-4 py-2 bg-red-900 bg-opacity-30 text-red-400 border border-red-700 hover:bg-red-500 hover:text-white transition-all font-bold orbitron text-xs rounded shadow-[0_0_10px_rgba(239,68,68,0.2)]">NEW GAME (WIPE SESSION)</button>
+                    <button onclick="window.adminEndGame()" id="admin-end-btn" class="px-4 py-2 border border-yellow-800 text-yellow-600 hover:bg-yellow-900 hover:text-yellow-400 transition-all font-bold orbitron text-xs rounded">END GAME</button>
+                    <div class="flex items-center gap-2 border border-cyan-800 rounded px-2">
+                        <input type="number" id="admin-timer-input" value="60" class="w-16 bg-black text-cyan-400 text-center font-bold font-mono outline-none p-1 text-xs" />
+                        <span class="text-xs text-cyan-700 font-bold">MINS</span>
+                        <button onclick="window.adminToggleTimerMode()" id="admin-timer-mode-btn" class="px-2 py-2 text-cyan-600 hover:text-cyan-400 transition-all font-bold orbitron text-xs">TIMER MODE: COUNT UP</button>
+                    </div>
+                    <button onclick="window.showView('view-admin-settings')" class="px-4 py-2 border border-purple-800 text-purple-400 hover:bg-purple-900 hover:text-white transition-all font-bold orbitron text-xs rounded shadow-[0_0_10px_rgba(168,85,247,0.2)]">HINT SETTINGS</button>
                     <button onclick="window.closeAdmin()" class="px-6 py-2 text-xs border border-cyan-500 text-cyan-400 hover:bg-cyan-900 hover:text-white transition-all font-bold tracking-widest rounded">EXIT</button>
                 </div>
             </div>
@@ -382,19 +402,85 @@
             </div>
         </div>
 
+        <!-- 5.5 ADMIN SETTINGS VIEW -->
+        <div id="view-admin-settings" class="hidden-view space-y-6">
+            <div class="flex justify-between items-end border-b border-purple-900 pb-4">
+                <h2 class="text-3xl orbitron text-purple-500">HINT CODE OVERRIDES</h2>
+                <div class="flex gap-2">
+                    <button onclick="window.showView('view-admin')" class="px-6 py-2 text-xs border border-cyan-500 text-cyan-400 hover:bg-cyan-900 hover:text-white transition-all font-bold tracking-widest rounded">BACK TO DASHBOARD</button>
+                </div>
+            </div>
+
+            <div class="cyber-card p-4 rounded-xl border-purple-900 border-opacity-50">
+                <p class="text-xs text-purple-300 mb-4 font-mono">Select a node to edit its Python hint output. Changes applied here will sync immediately to all agents.</p>
+                
+                <div class="flex flex-col md:flex-row gap-4 h-[60vh]">
+                    <div class="w-full md:w-1/3 border border-purple-900 rounded overflow-y-auto custom-scrollbar" id="admin-questions-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <div class="w-full md:w-2/3 border border-purple-900 rounded flex flex-col p-4 bg-[#0a0f1e]">
+                        <h3 id="admin-edit-q-title" class="text-purple-400 font-bold mb-2 orbitron">SELECT A NODE</h3>
+                        <textarea id="admin-edit-q-hint" class="flex-grow w-full bg-black text-cyan-300 p-3 font-mono text-xs border border-cyan-900 rounded mb-4" placeholder="Python code hint..."></textarea>
+                        <button onclick="window.adminSaveHint()" class="py-2 bg-purple-900 text-white font-bold orbitron rounded hover:bg-purple-700 transition-colors">SAVE OVERRIDE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STANDBY VIEW -->
+        <div id="view-standby" class="hidden-view flex flex-col items-center justify-center flex-grow space-y-8 animate-in fade-in">
+            <div class="text-center space-y-4 cyber-card p-10 rounded-xl border-green-900 max-w-md mx-auto relative overflow-hidden">
+                <div class="absolute inset-0 bg-green-900 bg-opacity-10 animate-pulse"></div>
+                <i data-lucide="shield-check" class="w-20 h-20 text-green-500 mx-auto relative z-10"></i>
+                <h1 class="text-4xl md:text-5xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-600 orbitron relative z-10">NETWORK SECURED</h1>
+                <p class="text-cyan-400 tracking-widest font-mono text-sm uppercase mt-4 relative z-10">Data extraction complete. Awaiting global debrief from Overseer.</p>
+            </div>
+        </div>
+
+        <!-- ADMIN LOBBY -->
+        <div id="view-admin-lobby" class="hidden-view flex flex-col items-center justify-center flex-grow space-y-8 animate-in fade-in w-full max-w-2xl mx-auto">
+            <div class="text-center space-y-2">
+                <i data-lucide="users" class="w-16 h-16 text-purple-500 mx-auto mb-4 font-bold animate-pulse"></i>
+                <h2 class="text-4xl orbitron text-purple-500 glow font-black tracking-wider">AWAITING AGENTS</h2>
+            </div>
+            <div class="cyber-card p-8 rounded-xl w-full text-center border-purple-900">
+                <div class="text-6xl font-bold text-white mb-2" id="lobby-team-count">0</div>
+                <div class="text-purple-400 font-mono text-sm tracking-widest uppercase mb-8">Teams Connected</div>
+                
+                <div class="max-h-48 overflow-y-auto custom-scrollbar border border-purple-900 bg-black bg-opacity-50 p-4 rounded mb-8 text-left space-y-2" id="lobby-team-list">
+                    <!-- Populated dynamically -->
+                </div>
+                
+                <button onclick="window.adminStartGame()" class="px-10 py-4 bg-green-900 bg-opacity-30 text-green-400 border border-green-700 hover:bg-green-500 hover:text-black transition-all font-bold orbitron text-lg rounded shadow-[0_0_15px_rgba(34,197,94,0.3)] w-full">LAUNCH MISSION (START GAME)</button>
+            </div>
+        </div>
+
         <!-- 6. PODIUM VIEW -->
-        <div id="view-podium" class="hidden-view flex flex-col items-center justify-center flex-grow space-y-12 animate-in zoom-in">
+        <div id="view-podium" class="hidden-view flex flex-col items-center justify-center flex-grow space-y-8 animate-in zoom-in w-full max-w-4xl mx-auto h-full overflow-hidden">
+            <!-- Personal Stats -->
+            <div id="podium-personal-stats" class="w-full text-center p-4 cyber-card rounded-xl border-cyan-500 hidden">
+                <h3 class="text-xl orbitron text-cyan-400">YOUR MISSION STATUS</h3>
+                <div class="flex justify-center gap-8 mt-2">
+                    <div class="text-3xl font-bold text-white tracking-widest"><span class="text-sm text-cyan-600">RANK:</span> #<span id="podium-my-rank">--</span></div>
+                    <div class="text-3xl font-bold text-green-400 tracking-widest"><span class="text-sm text-cyan-600">SCORE:</span> <span id="podium-my-score">--</span></div>
+                </div>
+            </div>
+            
             <div class="text-center space-y-2">
                 <i data-lucide="trophy" class="w-16 h-16 text-yellow-400 mx-auto mb-2 animate-bounce"></i>
                 <h2 class="text-4xl orbitron text-yellow-400 glow font-black tracking-wider">CHAMPIONS</h2>
                 <p class="text-cyan-600 uppercase text-xs tracking-widest">Network Grid Fully Decrypted</p>
             </div>
 
-            <div id="podium-container" class="flex items-end justify-center gap-6 w-full max-w-4xl px-4 h-[300px]">
+            <div id="podium-container" class="flex items-end justify-center gap-6 w-full max-w-3xl px-4 h-[250px] flex-shrink-0">
                 <!-- Populated dynamically -->
             </div>
 
-            <button onclick="window.showView('view-leaderboard')" class="px-8 py-3 border border-cyan-500 text-cyan-400 hover:bg-cyan-900 hover:text-white transition-all font-bold orbitron text-xs tracking-widest rounded">FULL LEADERBOARD</button>
+            <div id="podium-runner-ups" class="w-full flex-grow overflow-y-auto custom-scrollbar cyber-card p-4 rounded-xl hidden space-y-2 mt-4">
+                <!-- Populated dynamically -->
+            </div>
+
+            <button onclick="window.openLeaderboard()" class="mt-4 px-8 py-3 border border-cyan-500 text-cyan-400 hover:bg-cyan-900 hover:text-white transition-all font-bold orbitron text-xs tracking-widest rounded flex-shrink-0">FULL LEADERBOARD</button>
         </div>
 
     </div>
@@ -413,7 +499,7 @@
         const ADMIN_PASS = "admin123";
 
         window.showView = (vId) => {
-            const views = ['view-auth', 'view-game', 'view-leaderboard', 'view-admin-login', 'view-admin', 'view-waiting', 'view-podium'];
+            const views = ['view-auth', 'view-game', 'view-leaderboard', 'view-admin-login', 'view-admin', 'view-admin-settings', 'view-podium', 'view-standby', 'view-admin-lobby'];
             views.forEach(v => {
                 const el = document.getElementById(v);
                 if(el) el.classList.add('hidden-view');
@@ -468,7 +554,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-        import { getFirestore, collection, doc, onSnapshot, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, onSnapshot, setDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
         // *** USER INSTRUCTIONS: PASTE YOUR FIREBASE CONFIGURATION HERE ***
         // Log into Firebase Console -> Open Project Settings -> Copy "firebaseConfig" variables
@@ -915,7 +1001,7 @@ print(result)`
         const GRID_H = 25;
         
         // Use Global Window State so module can interact with inline HTML functions
-        window.db = { teams: [] };
+        window.db = { teams: [], questions: QUESTIONS };
         window.state = {
             teamId: null, // Now a STRING team Document ID 
             activeQ: null,
@@ -944,6 +1030,7 @@ print(result)`
         };
 
         // Real-Time Firebase Listener
+        if (fsDb) {
             onSnapshot(collection(fsDb, "teams"), (querySnapshot) => {
                 const updatedTeams = [];
                 querySnapshot.forEach((doc) => {
@@ -954,6 +1041,10 @@ print(result)`
                 
                 if(!document.getElementById('view-admin').classList.contains('hidden-view')) window.renderAdminTable();
                 if(!document.getElementById('view-leaderboard').classList.contains('hidden-view')) window.refreshScoreboard();
+                if(!document.getElementById('view-admin-lobby').classList.contains('hidden-view')) {
+                    document.getElementById('lobby-team-count').innerText = updatedTeams.length;
+                    document.getElementById('lobby-team-list').innerHTML = updatedTeams.map(t => `<div class="p-2 border-b border-purple-900 text-purple-200 font-bold tracking-widest">${t.name}</div>`).join('');
+                }
                 if(window.state.teamId !== null) window.updateCluesUI();
             });
 
@@ -962,6 +1053,13 @@ print(result)`
                 if (docSnap.exists()) {
                     window.rules = docSnap.data();
                     
+                    // Setup QUESTIONS override
+                    if (window.rules.questionsOverride) {
+                        window.db.questions = window.rules.questionsOverride;
+                    } else {
+                        window.db.questions = QUESTIONS;
+                    }
+
                     // Sync UI inputs if admin is open
                     const cfgHA = document.getElementById('cfg-hint-attempts');
                     const cfgPC = document.getElementById('cfg-points-correct');
@@ -979,8 +1077,10 @@ print(result)`
                         hintPenalty: 60,
                         gameStarted: false,
                         gameEnded: false,
-                        timerDirection: 'up'
+                        timerDirection: 'up',
+                        questionsOverride: null
                     };
+                    window.db.questions = QUESTIONS;
                     window.cloudSaveRules(window.rules);
                 }
                 window.applyRulesState();
@@ -1043,8 +1143,9 @@ print(result)`
         };
         
         window.populateCluesList = () => {
-            const across = QUESTIONS.filter(q => q.dir === 'across').sort((a,b) => a.display_id - b.display_id);
-            const down = QUESTIONS.filter(q => q.dir === 'down').sort((a,b) => a.display_id - b.display_id);
+            const qs = window.db.questions || QUESTIONS;
+            const across = qs.filter(q => q.dir === 'across').sort((a,b) => a.display_id - b.display_id);
+            const down = qs.filter(q => q.dir === 'down').sort((a,b) => a.display_id - b.display_id);
             
             const renderList = (arr, containerId) => {
                 document.getElementById(containerId).innerHTML = arr.map(q => `
@@ -1070,7 +1171,30 @@ print(result)`
         };
 
         window.closeLeaderboard = () => {
-            window.showView('view-game');
+            if (window.rules && window.rules.gameEnded) {
+                window.showView('view-podium');
+            } else {
+                window.showView('view-game');
+            }
+        };
+
+        window.downloadLeaderboardPDF = () => {
+            const element = document.getElementById('view-leaderboard');
+            const opt = {
+                margin:       1,
+                filename:     'CyberVerse_Leaderboard.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#0a0f1e' },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            
+            // Temporarily hide buttons to keep PDF clean
+            const buttons = element.querySelectorAll('button');
+            buttons.forEach(btn => btn.style.display = 'none');
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                buttons.forEach(btn => btn.style.display = '');
+            });
         };
 
         window.startGame = () => {
@@ -1105,15 +1229,19 @@ print(result)`
                 timerDirection: (window.rules && window.rules.timerDirection) || 'up'
             };
 
+            if (window.rules && window.rules.timerDirection === 'down') {
+                const mins = parseInt(document.getElementById('admin-timer-input')?.value) || 60;
+                newTeam.time = mins * 60;
+            }
+
             window.cloudSaveTeam(newTeam);
+            // Push locally so UI can grab it instantly before snapshot
+            window.db.teams.push(newTeam);
+            
             window.state.teamId = newTeamId;
             sessionStorage.setItem('cyber_active_session', window.state.teamId);
 
-            if (window.rules && window.rules.gameStarted) {
-                window.startGameExecution();
-            } else {
-                window.showView('view-waiting');
-            }
+            window.startGameExecution();
         };
 
         window.startGameExecution = () => {
@@ -1156,10 +1284,21 @@ print(result)`
                 clearInterval(window.state.timerInterval);
                 window.state.teamId = null;
                 sessionStorage.removeItem('cyber_active_session');
-                
-                window.showModal("MISSION COMPLETED", `Final Score: ${team ? team.score : 0}\nSolved: ${team ? team.solved.length : 0} / ${QUESTIONS.length}\nAwait further commands from Overseer.`);
-                
-                setTimeout(() => { location.reload(); }, 3000);
+                window.showView('view-auth');
+                document.getElementById('surrender-btn').classList.add('hidden-view');
+                document.getElementById('leaderboard-btn').classList.add('hidden-view');
+                document.getElementById('exit-btn').classList.add('hidden-view');
+            }
+        };
+
+        window.exitToHome = () => {
+            if(confirm("Exit and return to the registration screen?")) {
+                window.state.teamId = null;
+                sessionStorage.removeItem('cyber_active_session');
+                window.showView('view-auth');
+                document.getElementById('surrender-btn').classList.add('hidden-view');
+                document.getElementById('leaderboard-btn').classList.add('hidden-view');
+                document.getElementById('exit-btn').classList.add('hidden-view');
             }
         };
 
@@ -1224,8 +1363,8 @@ print(result)`
                 const x = i % GRID_W;
                 const y = Math.floor(i / GRID_W);
                 
-                const overlappingQuestions = QUESTIONS.filter(q => q.dir === 'across' ? (y===q.y && x>=q.x && x<q.x+q.len) : (x===q.x && y>=q.y && y<q.y+q.len));
-                const startMatch = QUESTIONS.find(q => q.x===x && q.y===y); 
+                const overlappingQuestions = window.db.questions.filter(q => q.dir === 'across' ? (y===q.y && x>=q.x && x<q.x+q.len) : (x===q.x && y>=q.y && y<q.y+q.len));
+                const startMatch = window.db.questions.find(q => q.x===x && q.y===y); 
                 
                 let html = `<div class="grid-cell" id="cell-${x}-${y}">`;
                 
@@ -1261,7 +1400,7 @@ print(result)`
             const team = window.db.teams.find(t => t.id === window.state.teamId);
             if(team && team.solved.includes(qid)) return; 
             
-            const q = QUESTIONS.find(x => x.id === qid);
+            const q = window.db.questions.find(x => x.id === qid);
             window.state.activeQ = q;
             
             const promptEl = document.getElementById('decrypt-prompt');
@@ -1343,7 +1482,7 @@ print(result)`
         window.updateCluesUI = () => {
             const team = window.db.teams.find(t => t.id === window.state.teamId);
             if(!team) return;
-            QUESTIONS.forEach(q => {
+            window.db.questions.forEach(q => {
                 const el = document.getElementById(`clue-${q.id}`);
                 if(!el) return;
                 
@@ -1408,13 +1547,12 @@ print(result)`
         
         window.checkWinCondition = () => {
             const team = window.db.teams.find(t => t.id === window.state.teamId);
-            if(team && team.solved.length >= QUESTIONS.length) {
+            if(team && team.solved.length >= window.db.questions.length) {
                 team.submitted = true;
                 window.cloudSaveTeam(team);
                 clearInterval(window.state.timerInterval);
-                window.state.teamId = null;
-                sessionStorage.removeItem('cyber_active_session');
-                window.showModal("MISSION ACCOMPLISHED", `Grid fully decrypted.\nFinal Score: ${team.score}\nTime: ${document.getElementById('timer').innerText}\n\nAwait further commands.`);
+                
+                window.showView('view-standby');
             }
         };
 
@@ -1455,12 +1593,6 @@ print(result)`
             }
         };
 
-        window.showView = (vId) => {
-            ['view-auth', 'view-game', 'view-admin', 'view-leaderboard', 'view-admin-login'].forEach(id => {
-                document.getElementById(id).classList.add('hidden-view');
-            });
-            document.getElementById(vId).classList.remove('hidden-view');
-        };
 
         window.showModal = (t, b) => {
             document.getElementById('modal-title').innerText = t;
@@ -1493,7 +1625,7 @@ print(result)`
                     const agent2 = t.agent2 || 'N/A';
                     const teamId = t.id || '';
                     const hintsCount = (t.hintsUsed || []).length;
-                    const usedAllHints = hintsCount >= QUESTIONS.length;
+                    const usedAllHints = hintsCount >= window.db.questions.length;
                     
                     body.innerHTML += `
                         <tr class="hover:bg-yellow-900 hover:bg-opacity-20 transition-colors">
@@ -1501,7 +1633,7 @@ print(result)`
                             <td class="p-4 text-cyan-100 font-bold uppercase tracking-widest">${teamName}</td>
                             <td class="p-4 text-cyan-600 uppercase text-[10px]">${agent1} & ${agent2}</td>
                             <td class="p-4 font-mono text-cyan-300">${m}:${s}</td>
-                            <td class="p-4 text-cyan-500">${solvedCount} / ${QUESTIONS.length}</td>
+                            <td class="p-4 text-cyan-500">${solvedCount} / ${window.db.questions.length}</td>
                             <td class="p-4 ${flagsCount > 0 ? 'text-red-500 font-bold' : 'text-cyan-700'}">${flagsCount}</td>
                             <td class="p-4 ${usedAllHints ? 'text-red-500 font-bold animate-pulse' : 'text-cyan-500'}">${hintsCount}</td>
                             <td class="p-4 space-x-3">
@@ -1549,27 +1681,62 @@ print(result)`
         window.applyRulesState = () => {
             if (!window.rules) return;
             
+            const overlay = document.getElementById('grid-lock-overlay');
+            
             // 1. Check Game Started
-            if (window.rules.gameStarted && window.state.teamId && document.getElementById('view-waiting').classList.contains('hidden-view') === false) {
-                window.startGameExecution();
+            if (window.rules.gameStarted) {
+                if (overlay) overlay.classList.add('hidden');
+                
+                if (window.state.teamId && document.getElementById('view-auth').classList.contains('hidden-view') === false) {
+                    window.startGameExecution();
+                }
+            } else {
+                if (overlay) overlay.classList.remove('hidden');
             }
             
             // 2. Check Game Ended
             if (window.rules.gameEnded) {
                 window.showPodium();
+                const lbBackBtn = document.getElementById('leaderboard-back-btn');
+                if (lbBackBtn) lbBackBtn.innerText = "BACK TO PODIUM";
+                
+                const surrenderBtn = document.getElementById('surrender-btn');
+                if (surrenderBtn) surrenderBtn.classList.add('hidden-view');
+                
+                const exitBtn = document.getElementById('exit-btn');
+                if (exitBtn && window.state.teamId) exitBtn.classList.remove('hidden-view');
+            } else {
+                const exitBtn = document.getElementById('exit-btn');
+                if (exitBtn) exitBtn.classList.add('hidden-view');
             }
         };
 
         window.showPodium = () => {
             window.showView('view-podium');
             const container = document.getElementById('podium-container');
-            if(!container) return;
+            const runnerUps = document.getElementById('podium-runner-ups');
+            const myStats = document.getElementById('podium-personal-stats');
+            if(!container || !runnerUps) return;
+            
             container.innerHTML = '';
+            runnerUps.innerHTML = '';
+            runnerUps.classList.add('hidden');
+            if(myStats) myStats.classList.add('hidden');
 
             if (!window.db || !window.db.teams || window.db.teams.length === 0) return;
 
             const sorted = [...window.db.teams].sort((a,b) => b.score - a.score || a.time - b.time);
             
+            // Render Personal Stats if player is logged in
+            if (window.state.teamId && myStats) {
+                const myIndex = sorted.findIndex(t => t.id === window.state.teamId);
+                if (myIndex !== -1) {
+                    myStats.classList.remove('hidden');
+                    document.getElementById('podium-my-rank').innerText = myIndex + 1;
+                    document.getElementById('podium-my-score').innerText = sorted[myIndex].score;
+                }
+            }
+
             const first = sorted[0];
             const second = sorted[1];
             const third = sorted[2];
@@ -1578,9 +1745,9 @@ print(result)`
                 if(!team) return `<div class="flex-1"></div>`;
                 return `
                     <div class="flex flex-col items-center flex-1 h-full justify-end">
-                        <div class="text-center mb-2">
-                            <div class="text-sm font-bold truncate text-white max-w-[120px] uppercase font-mono tracking-widest">${team.name}</div>
-                            <div class="text-xs text-green-400 font-bold mt-1">${team.score} PTS</div>
+                        <div class="text-center mb-2 w-full px-1">
+                            <div class="text-xs md:text-sm font-bold truncate text-white uppercase font-mono tracking-widest w-full">${team.name}</div>
+                            <div class="text-[10px] md:text-xs text-green-400 font-bold mt-1">${team.score} PTS</div>
                         </div>
                         <div class="w-full ${color} bg-opacity-30 border-2 ${color.replace('bg-', 'border-')} rounded-t-lg flex flex-col items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.5)]" style="height: ${height}px;">
                             <span class="text-4xl font-black orbitron text-white text-opacity-80">${place}</span>
@@ -1590,10 +1757,27 @@ print(result)`
             };
 
             container.innerHTML = `
-                ${getPodiumHtml(second, '2ND', 180, 'bg-slate-500')}
-                ${getPodiumHtml(first, '1ST', 250, 'bg-yellow-500')}
-                ${getPodiumHtml(third, '3RD', 120, 'bg-amber-700')}
+                ${getPodiumHtml(second, '2', 150, 'bg-gray-400')}
+                ${getPodiumHtml(first, '1', 200, 'bg-yellow-400')}
+                ${getPodiumHtml(third, '3', 120, 'bg-orange-700')}
             `;
+
+            // Runner-ups list
+            if (sorted.length > 3) {
+                runnerUps.classList.remove('hidden');
+                for(let i = 3; i < sorted.length; i++) {
+                    const t = sorted[i];
+                    runnerUps.innerHTML += `
+                        <div class="flex justify-between items-center p-3 rounded border border-cyan-900 border-opacity-30 text-base transition-all">
+                            <div class="truncate max-w-[50%]">
+                                <span class="font-bold text-cyan-600 mr-2">${i+1}.</span>
+                                <span class="uppercase tracking-widest text-white font-bold">${t.name}</span>
+                            </div>
+                            <div class="text-right flex-shrink-0 text-green-400 font-bold">${t.score} PTS</div>
+                        </div>
+                    `;
+                }
+            }
             if (window.lucide) lucide.createIcons();
         };
 
@@ -1608,11 +1792,35 @@ print(result)`
             alert("Rules applied globally!");
         };
 
+        window.adminWipeSession = async () => {
+            if(confirm("WARNING: This will permanently delete all teams and start a new session. Continue?")) {
+                if(!fsDb) return;
+                
+                // Reset Rules
+                if(window.rules) {
+                    window.rules.gameStarted = false;
+                    window.rules.gameEnded = false;
+                    window.cloudSaveRules(window.rules);
+                }
+
+                // Delete all teams from Firestore
+                const q = collection(fsDb, "teams");
+                const snapshot = await getDocs(q);
+                snapshot.forEach(d => {
+                    deleteDoc(doc(fsDb, "teams", d.id));
+                });
+                
+                window.db.teams = [];
+                window.showView('view-admin-lobby');
+            }
+        };
+
         window.adminStartGame = () => {
             if(!window.rules) return;
             window.rules.gameStarted = true;
             window.rules.gameEnded = false;
             window.cloudSaveRules(window.rules);
+            window.showView('view-admin');
         };
 
         window.adminEndGame = () => {
@@ -1626,13 +1834,14 @@ print(result)`
         window.adminToggleTimerMode = () => {
             const currentMode = (window.db.teams && window.db.teams.length > 0) ? (window.db.teams[0].timerDirection || 'up') : 'up';
             const newMode = currentMode === 'up' ? 'down' : 'up';
+            const mins = parseInt(document.getElementById('admin-timer-input').value) || 60;
             
-            if(confirm(`Switch all teams to ${newMode === 'up' ? 'COUNT UP (from 0)' : 'COUNT DOWN (from 60m)'}?`)) {
+            if(confirm(`Switch all teams to ${newMode === 'up' ? 'COUNT UP (from 0)' : `COUNT DOWN (from ${mins}m)`}?`)) {
                 if(window.db && window.db.teams) {
                     window.db.teams.forEach(t => {
                         t.timerDirection = newMode;
                         if (newMode === 'down') {
-                            t.time = 3600; 
+                            t.time = mins * 60; 
                         } else {
                             t.time = 0; 
                         }
@@ -1641,6 +1850,57 @@ print(result)`
                 }
                 const btn = document.getElementById('admin-timer-mode-btn');
                 if(btn) btn.innerText = `TIMER MODE: ${newMode === 'up' ? 'COUNT UP' : 'COUNT DOWN'}`;
+            }
+        };
+
+        window.adminSelectHintNode = (qid) => {
+            window.adminActiveHintQid = qid;
+            const q = window.db.questions.find(x => x.id === qid);
+            document.getElementById('admin-edit-q-title').innerText = `EDITING: NODE [${q.display_id} ${q.dir.toUpperCase()}]`;
+            document.getElementById('admin-edit-q-hint').value = q.pythonHint || "";
+            
+            // Highlight selected in list
+            document.querySelectorAll('.admin-q-item').forEach(el => el.classList.remove('bg-purple-900', 'bg-opacity-50', 'border-purple-500'));
+            const selEl = document.getElementById(`admin-q-item-${qid}`);
+            if(selEl) selEl.classList.add('bg-purple-900', 'bg-opacity-50', 'border-purple-500');
+        };
+
+        window.adminSaveHint = () => {
+            if(!window.adminActiveHintQid) {
+                alert("Select a node first.");
+                return;
+            }
+            if(!window.rules) window.rules = {};
+            if(!window.rules.questionsOverride) {
+                // Deep copy QUESTIONS to start override
+                window.rules.questionsOverride = JSON.parse(JSON.stringify(window.db.questions));
+            }
+            
+            const newCode = document.getElementById('admin-edit-q-hint').value;
+            const qTarget = window.rules.questionsOverride.find(x => x.id === window.adminActiveHintQid);
+            if(qTarget) {
+                qTarget.pythonHint = newCode;
+                window.cloudSaveRules(window.rules);
+                alert("Hint code updated successfully. Changes synced to all active sessions.");
+            }
+        };
+
+        // Override showView to intercept and populate settings list
+        const originalShowView = window.showView;
+        window.showView = (vId) => {
+            originalShowView(vId);
+            if (vId === 'view-admin-settings') {
+                const list = document.getElementById('admin-questions-list');
+                const qs = window.db.questions || QUESTIONS;
+                list.innerHTML = qs.map(q => `
+                    <div id="admin-q-item-${q.id}" class="admin-q-item p-3 border-b border-purple-900 border-opacity-30 cursor-pointer hover:bg-purple-900 hover:bg-opacity-20 transition-colors" onclick="window.adminSelectHintNode('${q.id}')">
+                        <div class="font-bold text-purple-400 text-xs orbitron">${q.display_id}. ${q.dir.toUpperCase()}</div>
+                        <div class="text-[10px] text-cyan-500 truncate mt-1">${q.hint}</div>
+                    </div>
+                `).join('');
+                
+                // Select first by default
+                if(qs.length > 0) window.adminSelectHintNode(qs[0].id);
             }
         };
 
