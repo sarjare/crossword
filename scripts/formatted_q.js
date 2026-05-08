@@ -1,18 +1,18 @@
 const QUESTIONS = [
   {
     id: '14A',
-    display_id: 14,
+    display_id: 6,
     dir: 'across',
     x: 6,
     y: 12,
     len: 14,
     ans: "AUTHENTICATION",
     code: `// System module AUTHENTICATION check\nfunction execute_authentication() {\n  return activate_protocol('6');\n}`,
-    hint: "A process used to verify a user's identity, important in Zero Trust models used by Dell."
+    hint: "A process used to verify a user’s identity, important in Zero Trust models used by Dell."
 },
   {
     id: '11D',
-    display_id: 11,
+    display_id: 8,
     dir: 'down',
     x: 10,
     y: 8,
@@ -23,7 +23,7 @@ const QUESTIONS = [
 },
   {
     id: '16D',
-    display_id: 16,
+    display_id: 5,
     dir: 'down',
     x: 13,
     y: 12,
@@ -34,7 +34,7 @@ const QUESTIONS = [
 },
   {
     id: '2D',
-    display_id: 2,
+    display_id: 3,
     dir: 'down',
     x: 16,
     y: 1,
@@ -56,29 +56,29 @@ const QUESTIONS = [
 },
   {
     id: '5D',
-    display_id: 5,
+    display_id: 23,
     dir: 'down',
     x: 19,
     y: 3,
     len: 10,
     ans: "ENCRYPTION",
     code: `// System module ENCRYPTION check\nfunction execute_encryption() {\n  return activate_protocol('23');\n}`,
-    hint: "Converting data into a form that cannot be easily understood by unauthorized users, widely used in Dell's security solutions."
+    hint: "Converting data into a form that cannot be easily understood by unauthorized users, widely used in Dell’s security solutions."
 },
   {
     id: '22A',
-    display_id: 22,
+    display_id: 9,
     dir: 'across',
     x: 13,
     y: 18,
     len: 10,
     ans: "RANSOMWARE",
     code: `// System module RANSOMWARE check\nfunction execute_ransomware() {\n  return activate_protocol('9');\n}`,
-    hint: "Malware that denies access to data until a ransom is paid, which Dell's recovery solutions help handle."
+    hint: "Malware that denies access to data until a ransom is paid, which Dell’s recovery solutions help handle."
 },
   {
     id: '13D',
-    display_id: 13,
+    display_id: 20,
     dir: 'down',
     x: 6,
     y: 11,
@@ -89,7 +89,7 @@ const QUESTIONS = [
 },
   {
     id: '10A',
-    display_id: 10,
+    display_id: 12,
     dir: 'across',
     x: 6,
     y: 8,
@@ -100,7 +100,7 @@ const QUESTIONS = [
 },
   {
     id: '21D',
-    display_id: 21,
+    display_id: 11,
     dir: 'down',
     x: 21,
     y: 16,
@@ -111,7 +111,7 @@ const QUESTIONS = [
 },
   {
     id: '20D',
-    display_id: 20,
+    display_id: 4,
     dir: 'down',
     x: 17,
     y: 16,
@@ -122,7 +122,7 @@ const QUESTIONS = [
 },
   {
     id: '18D',
-    display_id: 18,
+    display_id: 7,
     dir: 'down',
     x: 19,
     y: 14,
@@ -133,7 +133,7 @@ const QUESTIONS = [
 },
   {
     id: '3D',
-    display_id: 3,
+    display_id: 19,
     dir: 'down',
     x: 7,
     y: 2,
@@ -144,7 +144,7 @@ const QUESTIONS = [
 },
   {
     id: '9A',
-    display_id: 9,
+    display_id: 14,
     dir: 'across',
     x: 4,
     y: 5,
@@ -155,7 +155,7 @@ const QUESTIONS = [
 },
   {
     id: '23A',
-    display_id: 23,
+    display_id: 21,
     dir: 'across',
     x: 9,
     y: 23,
@@ -166,7 +166,7 @@ const QUESTIONS = [
 },
   {
     id: '4D',
-    display_id: 4,
+    display_id: 2,
     dir: 'down',
     x: 14,
     y: 2,
@@ -177,7 +177,7 @@ const QUESTIONS = [
 },
   {
     id: '12A',
-    display_id: 12,
+    display_id: 10,
     dir: 'across',
     x: 8,
     y: 10,
@@ -188,7 +188,7 @@ const QUESTIONS = [
 },
   {
     id: '1D',
-    display_id: 1,
+    display_id: 16,
     dir: 'down',
     x: 9,
     y: 0,
@@ -199,7 +199,7 @@ const QUESTIONS = [
 },
   {
     id: '7D',
-    display_id: 7,
+    display_id: 22,
     dir: 'down',
     x: 4,
     y: 4,
@@ -210,7 +210,7 @@ const QUESTIONS = [
 },
   {
     id: '19D',
-    display_id: 19,
+    display_id: 2,
     dir: 'down',
     x: 15,
     y: 15,
@@ -221,7 +221,7 @@ const QUESTIONS = [
 },
   {
     id: '8A',
-    display_id: 8,
+    display_id: 18,
     dir: 'across',
     x: 12,
     y: 4,
@@ -232,7 +232,7 @@ const QUESTIONS = [
 },
   {
     id: '6A',
-    display_id: 6,
+    display_id: 13,
     dir: 'across',
     x: 0,
     y: 4,
@@ -254,7 +254,7 @@ const QUESTIONS = [
 },
   {
     id: '6D',
-    display_id: 6,
+    display_id: 1,
     dir: 'down',
     x: 0,
     y: 4,
